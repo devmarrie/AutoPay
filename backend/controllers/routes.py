@@ -8,7 +8,11 @@ need_routes = Blueprint('need_routes', __name__)
 @need_routes.route('/add_need', methods=['POST'])
 def add_need():
     data = request.get_json()
-    ned = Need(need=data['need'], amount=data['amount'], duedate=data['duedate'], reminderdate=['reminderdate'])
+    need = data['need']
+    amount = data['amount']
+    duedate = data['duedate']
+    reminderdate = data['reminderdate']
+    ned = Need(need=need, amount=amount, duedate=duedate, reminderdate=reminderdate)
     db.session.add(ned)
     db.session.commit()
     return jsonify({'message': 'New need created successfully'})
