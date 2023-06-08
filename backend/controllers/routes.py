@@ -17,3 +17,8 @@ def add_need():
     db.session.commit()
     return jsonify({'message': 'New need created successfully'})
 
+
+@need_routes.route('/get_needs')
+def get_needs():
+    needs =  Need.query.all()
+    return jsonify([n.to_dict() for n in needs])
