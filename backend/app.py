@@ -1,5 +1,6 @@
 from flask import Flask
 from models.database import db, init_db
+from flask_migrate import Migrate
 from controllers.routes import need_routes, users_routes, pay_routes, hist_routes
 
 app = Flask(__name__)
@@ -9,6 +10,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://postgres:post_123@localhos
 app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
 
 init_db(app)
+migrate = Migrate(app, db)
 
 # Once connectivity is established create the tables
 with app.app_context():
