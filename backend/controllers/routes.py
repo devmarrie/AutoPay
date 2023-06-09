@@ -39,16 +39,27 @@ def create_payment():
     db.session.commit()
     return jsonify({'message': 'Payment created succesfully'})
 
+@pay_routes.route('/get_pay')   
+def get_pay():
+    pm =  Pay.query.all()
+    return jsonify([p.to_dict() for p in pm])
+
 """History routes"""
 @hist_routes.route('/new_history', methods=['POST'])
 def create_history():
     data = request.get_json()
+    print(data)
     status = data['status']
     code = data['code']
     h = History(status=status, code=code)
     db.session.add(h)
     db.session.commit()
     return jsonify({'message': 'History created succesfully'})
+
+@hist_routes.route('/get_history')   
+def get_hist():
+    hist =  History.query.all()
+    return jsonify([h.to_dict() for h in hist])
 
 """Needs routes"""
 @need_routes.route('/add_need', methods=['POST'])
@@ -58,7 +69,10 @@ def add_need():
     amount = data['amount']
     duedate = data['duedate']
     reminderdate = data['reminderdate']
-    ned = Need(need=need, amount=amount, duedate=duedate, reminderdate=reminderdate)
+    user_id = data['user_id']
+    history_id = data['history_id']
+    ned = Need(need=need, amount=amount, duedate=duedate,
+               reminderdate=reminderdate, user_id=user_id, history_id=history_id    )
     db.session.add(ned)
     db.session.commit()
     return jsonify({'message': 'New need created successfully'})
