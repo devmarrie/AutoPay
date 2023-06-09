@@ -7,4 +7,6 @@ class Need(BaseModel):
     amount = db.Column(db.Integer(), nullable=False)
     duedate = db.Column(db.DateTime, nullable=False)
     reminderdate = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
+    history_id = db.Column(db.String(60), db.ForeignKey('history.id'), nullable=False)
 
