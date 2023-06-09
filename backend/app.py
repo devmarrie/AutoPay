@@ -1,7 +1,7 @@
 from flask import Flask
 from models.database import db, init_db
 from flask_migrate import Migrate
-from controllers.routes import need_routes, users_routes, pay_routes, hist_routes
+from controllers import need_routes, users_routes, pay_routes, hist_routes
 
 app = Flask(__name__)
 
