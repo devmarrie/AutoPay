@@ -20,3 +20,24 @@ def create_history():
 def get_hist():
     hist =  History.query.all()
     return jsonify([h.to_dict() for h in hist])
+
+@hist_routes.route('/update_history/<string:id>', methods=['PUT'])
+def update_history(id):
+    hist = History.query.get(id)
+    if not hist:
+        return jsonify({'error': 'History record not found' }), 404
+    data = request.get_json()
+    hist.status = data.get('status', hist.status)
+    hist.code = data.get('code', hist.code)
+    db.session.commit()
+    return jsonify(hist.to_dict())
+
+@hist_routes.route('/delete_history/<string:id>', methods=['DELETE'])
+def del_history(id):
+    h = History.query.get(id)
+    if h:
+        db.session. delete(h)
+        db.session.commit()
+        return jsonify({'message': f'Payment history belonging to {id} deleted successfully'})
+    else:
+        return jsonify({'error': f'Payment history with {id} not found'}), 404
