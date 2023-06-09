@@ -5,3 +5,4 @@ class History(BaseModel):
     __tablename__ = 'history'
     status = db.Column(db.String, nullable=False)
     code = db.Column(db.String, nullable=True)
+    needs = db.relationship('Need', backref='history')
