@@ -1,6 +1,6 @@
 from flask import Flask
 from models.database import db, init_db
-from controllers.routes import need_routes
+from controllers.routes import need_routes, users_routes, pay_routes, hist_routes
 
 app = Flask(__name__)
 
@@ -15,6 +15,9 @@ with app.app_context():
     db.create_all()
 
 app.register_blueprint(need_routes)
+app.register_blueprint(users_routes)
+app.register_blueprint(pay_routes)
+app.register_blueprint(hist_routes)
 
 @app.route("/")
 def home():
