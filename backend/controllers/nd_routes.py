@@ -3,15 +3,12 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from models.need import Need
 from models.user import User
 from models.database import db
-from datetime import datetime
+from datetime import datetime, timedelta
 import africastalking
 import phonenumbers
 
 need_routes = Blueprint('need_routes', __name__)
 
-# Background scheduler
-scheduler = BackgroundScheduler()
-scheduler.start()
 
 # Africas Talking credentials
 username = 'sandbox'
@@ -33,8 +30,8 @@ def add_need():
     data = request.get_json()
     need = data['need']
     amount = data['amount']
-    duedate = datetime.strptime(data['duedate'], '%H:%M %d-%m-%Y')
-    storable_date = duedate.strftime('%Y-%m-%d %H:%M')
+    duedate = datetime.strptime(data['duedate'], '%H:%M:%S %d-%m-%Y')
+    storable_date = duedate.strftime('%Y-%m-%d %H:%M:%S')
     user_id = data['user_id']
     history_id = data['history_id']
 
@@ -44,12 +41,29 @@ def add_need():
 
     ned = Need(need=need, amount=amount, duedate=storable_date,
                user_id=user_id, history_id=history_id )
-    db.session.add(ned)
-    db.session.commit()
+    
 
     parsed_number = phonenumbers.parse(user.phone_no, None)
     formatted_no = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
-    send_sms(formatted_no, f'A new need called {need} was created')
+
+    def send_three_minutes_before():
+        send_sms(formatted_no, f'The payment for {need} is due soon')
+
+    def send_on_due_date():
+        send_sms(formatted_no, f'The {need} should be settled today')
+
+    def send_two_minutes_after():
+       send_sms(formatted_no, f'The payment for {need} has been delayed by two minutes')
+
+    # Background scheduler
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(send_three_minutes_before, 'date', run_date=duedate - timedelta(minutes=3))
+    scheduler.add_job(send_on_due_date, 'date', run_date=duedate)
+    scheduler.add_job(send_two_minutes_after, 'date', run_date=duedate + timedelta(minutes=2))
+    scheduler.start()
+
+    db.session.add(ned)
+    db.session.commit()
 
     return jsonify({'message': 'New need created successfully'})
 
