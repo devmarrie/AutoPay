@@ -9,9 +9,9 @@ users_routes = Blueprint('user_routes', __name__)
 def create_user():
     data = request.get_json()
     name = data['name']
-    email = data['email']
+    phone_no = data['phone_no']
     password = data['password']
-    usr = User(name=name, email=email, password=password)
+    usr = User(name=name, phone_no=phone_no, password=password)
     db.session.add(usr)
     db.session.commit()
     return jsonify({'message': 'User created succesfully'})
@@ -29,10 +29,10 @@ def update_user(id):
         return jsonify({'error': 'User not found' }), 404
     data = request.get_json()
     us.name = data.get('name', us.name)
-    us.email = data.get('email', us.email)
+    us.phone_no = data.get('phone_no', us.phone_no)
     us.password = data.get('password', us.password)
     db.session.commit()
-    return jsonify(us.to_dict())
+    return jsonify(us.to_dict())    
 
 @users_routes.route('/delete_user/<string:id>', methods=['DELETE'])
 def del_need(id):
