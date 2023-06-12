@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 from models.user import User
 from models.database import db
+from werkzeug.security import generate_password_hash, check_password_hash
+
 
 users_routes = Blueprint('user_routes', __name__)
 
@@ -11,7 +13,8 @@ def create_user():
     name = data['name']
     phone_no = data['phone_no']
     password = data['password']
-    usr = User(name=name, phone_no=phone_no, password=password)
+    hashed_pwd = generate_password_hash(password)
+    usr = User(name=name, phone_no=phone_no, password=hashed_pwd)
     db.session.add(usr)
     db.session.commit()
     return jsonify({'message': 'User created succesfully'})
