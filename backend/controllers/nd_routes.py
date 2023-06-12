@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from models.need import Need
 from models.database import db
+from datetime import datetime
 
 need_routes = Blueprint('need_routes', __name__)
 
@@ -11,12 +12,12 @@ def add_need():
     data = request.get_json()
     need = data['need']
     amount = data['amount']
-    duedate = data['duedate']
-    reminderdate = data['reminderdate']
+    duedate = datetime.strptime(data['duedate'], '%d-%m-%Y')
+    storable_date = duedate.strftime('%Y-%m-%d')
     user_id = data['user_id']
     history_id = data['history_id']
-    ned = Need(need=need, amount=amount, duedate=duedate,
-               reminderdate=reminderdate, user_id=user_id, history_id=history_id    )
+    ned = Need(need=need, amount=amount, duedate=storable_date,
+               user_id=user_id, history_id=history_id )
     db.session.add(ned)
     db.session.commit()
     return jsonify({'message': 'New need created successfully'})
