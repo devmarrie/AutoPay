@@ -12,8 +12,8 @@ def add_need():
     data = request.get_json()
     need = data['need']
     amount = data['amount']
-    duedate = datetime.strptime(data['duedate'], '%d-%m-%Y')
-    storable_date = duedate.strftime('%Y-%m-%d')
+    duedate = datetime.strptime(data['duedate'], '%H:%M %d-%m-%Y')
+    storable_date = duedate.strftime('%Y-%m-%d %H:%M')
     user_id = data['user_id']
     history_id = data['history_id']
     ned = Need(need=need, amount=amount, duedate=storable_date,
