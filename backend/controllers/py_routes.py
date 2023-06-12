@@ -1,24 +1,31 @@
 from flask import Blueprint, jsonify, request
 from models.pay import Pay
 from models.database import db
-
+import requests
 
 pay_routes = Blueprint('pay_routes', __name__)
 
+consumer_key = 'b3G7K3Rr7TMaJiOXfeoBW97R71aN7uC9'
+consumer_secret = 'X3qaq8XnvnfFJXcm'
+
 """The authentication process to obtain the access token"""
-@pay_routes.route('/mpesa_auth', methods=['GET'])
-def authenticate():
-    consumer_key = 'b3G7K3Rr7TMaJiOXfeoBW97R71aN7uC9'
-    consumer_secret = 'X3qaq8XnvnfFJXcm'
-
+def token():
     api_url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-    response = request.get(api_url, auth=(consumer_key, consumer_secret))
-
+    response = requests.get(api_url, auth=(consumer_key, consumer_secret))
     if response.status_code == 200:
         access_token = response.json().get('access_token')
         return access_token
     else:
         return "Authentication failed", 401
+
+@pay_routes.route('/mpesa_accesstoken', methods=['GET'])
+def authenticate():
+    data = token()
+    return data
+
+    
+
+    
 
 
 @pay_routes.route('/new_payment', methods=['POST'])
