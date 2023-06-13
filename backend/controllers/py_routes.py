@@ -1,17 +1,19 @@
 from flask import Blueprint, jsonify, request
+from flask_mpesa import MpesaAPI
 from models.pay import Pay
 from models.database import db
 import requests
 from datetime import datetime
 import base64
-from flask_mpesa import MpesaAPI
+
 
 pay_routes = Blueprint('pay_routes', __name__)
 
+mpesa_api = MpesaAPI()
 # mpesa details
 consumer_key = 'b3G7K3Rr7TMaJiOXfeoBW97R71aN7uC9'
 consumer_secret = 'X3qaq8XnvnfFJXcm'
-callback_url = 'https://b2b3-197-232-61-203.ngrok-free.app'
+callback_url = 'https://13b4-197-232-61-201.ngrok-free.app'
 
 """The authentication process to obtain the access token"""
 def token():
@@ -22,6 +24,8 @@ def token():
         return access_token
     else:
         return "Authentication failed", 401
+    
+"""Register urls"""
 
 @pay_routes.route('/mpesa_accesstoken', methods=['GET'])
 def authenticate():
@@ -87,7 +91,7 @@ def incoming():
     return "ok"
 
 
-@pay_routes.route('/b2c')
+@pay_routes.route('/b2c', methods=['GET'])
 def settle_payments():
     amount = request.args.get('amount')
     mpesano = request.args.get('mpesano')
@@ -97,7 +101,7 @@ def settle_payments():
     my_url = callback_url + "/b2c/"
 
     data = {
-        "InitiatorName": "autopay",
+        "InitiatorName": "testapi",
         "SecurityCredential": "Pq5zXRgb7Fs/JA5D1vKYp6/3Ui7Sx+p9pxK2RdzI5l+o1FEsmiQWHnDnaQ8ivx4hit/KirZBXfDCAiksxtVgrODGeSAv4GIB6S7EHth1VQiexMYc2etBmvJNXrGzEg+mCySMX95URFRLwm+2Eaw45ei9CaqxIBZSNkovrLnS7pDkYZ82AAQulEpyr0HSVfZJ3u6tsNHNhwFj+pKf0bQ5xKIVzf+Ie1OwImrYWfA92gVG9va+zwNG/uZT59UJpTjS4/lPo+RTSHm35RrVpjQvfvZWlDmqK9CMNtL55i00SShpSHcuYM5sqCGzy7lbkWEh18qwcFXvXkNm/6sqhLltnQ==",
         "CommandID": "BusinessPayment",
         "Amount": amount,
@@ -108,6 +112,9 @@ def settle_payments():
         "ResultURL": my_url + "result",
         "Occasion": "Need"
     }
+
+    # res = mpesa_api.B2C.transact(**data)
+    # return res.json()
     
     res = requests.post(endpoint, json=data, headers=headers)
     return res.json()
