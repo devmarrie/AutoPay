@@ -2,16 +2,20 @@ from flask import Blueprint, jsonify, request
 from models.pay import Pay
 from models.database import db
 import requests
+from datetime import datetime
+import base64
 
 pay_routes = Blueprint('pay_routes', __name__)
 
+# mpesa details
 consumer_key = 'b3G7K3Rr7TMaJiOXfeoBW97R71aN7uC9'
 consumer_secret = 'X3qaq8XnvnfFJXcm'
+callback_url = 'https://90fc-197-232-61-203.ngrok-free.app'
 
 """The authentication process to obtain the access token"""
 def token():
-    api_url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
-    response = requests.get(api_url, auth=(consumer_key, consumer_secret))
+    mpesa_auth_url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
+    response = requests.get(mpesa_auth_url, auth=(consumer_key, consumer_secret))
     if response.status_code == 200:
         access_token = response.json().get('access_token')
         return access_token
@@ -23,21 +27,63 @@ def authenticate():
     data = token()
     return data
 
-    
 
-    
-
-
-@pay_routes.route('/new_payment', methods=['POST'])
+@pay_routes.route('/new_payment')
 def create_payment():
-    data = request.get_json()
-    amount = data['amount']
-    mpesano = data['mpesano']
-    user_id = data['user_id']
-    p = Pay(amount=amount, mpesano=mpesano, user_id=user_id)
-    db.session.add(p)
-    db.session.commit()
-    return jsonify({'message': 'Payment created succesfully'})
+    amount = request.args.get('amount')
+    mpesano = request.args.get('mpesano')
+
+    endpoint = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest'
+    access_token = token()
+    headers = { "Authorization": "Bearer %s" % access_token }
+    Timestamp = datetime.now()
+    frtime = Timestamp.strftime("%Y%m%d%H%M%S")
+    raw_password = "174379" + "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919" + frtime
+    password_bytes = raw_password.encode('utf-8')
+    password = base64.b64encode(password_bytes).decode('utf-8')
+
+    data = {
+        "BusinessShortCode": "174379",    
+        "Password": password,    
+        "Timestamp": frtime,    
+        "TransactionType": "CustomerPayBillOnline",    
+        "Amount": amount,    
+        "PartyA": mpesano,    
+        "PartyB":"174379",    
+        "PhoneNumber": mpesano,    
+        "CallBackURL": callback_url + "/stk_pay",    
+        "AccountReference":"TestPay",    
+        "TransactionDesc":"Test payment"
+    }
+
+    res = requests.post(endpoint, json=data, headers=headers)
+    return res.json()
+
+"""Consume the mpesa callback """
+@pay_routes.route("/stk_pay", methods=['POST'])
+def incoming():
+    info = request.get_json()['Body']
+    callback_metadata = info['stkCallback']['CallbackMetadata']
+    items = callback_metadata['Item']
+    print(items)
+
+    # for item in items:
+    #     if item['Name'] == 'Amount':
+    #         amount = item['Value']
+    #     elif item['Name'] == 'MpesaReceiptNumber':
+    #         mpesa_receipt_number = item['Value']
+    #     elif item['Name'] == 'TransactionDate':
+    #         date = item['Value']
+    #         strip_time = datetime.strptime(date, '%Y%m%d%H%M%S')
+    #         transaction_date = strip_time.strftime('%Y-%m-%d %H:%M:%S')
+    #     elif item['Name'] == 'PhoneNumber':
+    #        phone_number = item['Value']
+
+    # p = Pay(amount=amount, mpesa_receipt_number=mpesa_receipt_number,
+    #          transaction_date=transaction_date, mpesano=phone_number)
+    # db.session.add(p)
+    # db.session.commit()
+    return "ok"
 
 @pay_routes.route('/get_pay')   
 def get_pay():
