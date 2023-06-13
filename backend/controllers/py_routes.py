@@ -4,13 +4,14 @@ from models.database import db
 import requests
 from datetime import datetime
 import base64
+from flask_mpesa import MpesaAPI
 
 pay_routes = Blueprint('pay_routes', __name__)
 
 # mpesa details
 consumer_key = 'b3G7K3Rr7TMaJiOXfeoBW97R71aN7uC9'
 consumer_secret = 'X3qaq8XnvnfFJXcm'
-callback_url = 'https://90fc-197-232-61-203.ngrok-free.app'
+callback_url = 'https://b2b3-197-232-61-203.ngrok-free.app'
 
 """The authentication process to obtain the access token"""
 def token():
@@ -62,7 +63,7 @@ def create_payment():
 """Consume the mpesa callback """
 @pay_routes.route("/stk_pay", methods=['POST'])
 def incoming():
-    info = request.get_json()['Body']
+    info = request.get_data()
     callback_metadata = info['stkCallback']['CallbackMetadata']
     items = callback_metadata['Item']
     print(items)
@@ -83,6 +84,45 @@ def incoming():
     #          transaction_date=transaction_date, mpesano=phone_number)
     # db.session.add(p)
     # db.session.commit()
+    return "ok"
+
+
+@pay_routes.route('/b2c')
+def settle_payments():
+    amount = request.args.get('amount')
+    mpesano = request.args.get('mpesano')
+    endpoint = 'https://sandbox.safaricom.co.ke/mpesa/b2c/v1/paymentrequest'
+    access_token = token()
+    headers = { "Authorization": "Bearer %s" % access_token }
+    my_url = callback_url + "/b2c/"
+
+    data = {
+        "InitiatorName": "autopay",
+        "SecurityCredential": "Pq5zXRgb7Fs/JA5D1vKYp6/3Ui7Sx+p9pxK2RdzI5l+o1FEsmiQWHnDnaQ8ivx4hit/KirZBXfDCAiksxtVgrODGeSAv4GIB6S7EHth1VQiexMYc2etBmvJNXrGzEg+mCySMX95URFRLwm+2Eaw45ei9CaqxIBZSNkovrLnS7pDkYZ82AAQulEpyr0HSVfZJ3u6tsNHNhwFj+pKf0bQ5xKIVzf+Ie1OwImrYWfA92gVG9va+zwNG/uZT59UJpTjS4/lPo+RTSHm35RrVpjQvfvZWlDmqK9CMNtL55i00SShpSHcuYM5sqCGzy7lbkWEh18qwcFXvXkNm/6sqhLltnQ==",
+        "CommandID": "BusinessPayment",
+        "Amount": amount,
+        "PartyA": "174379",
+        "PartyB": mpesano,
+        "Remarks": "Need paid successfully",
+        "QueueTimeOutURL": my_url + "timeout",
+        "ResultURL": my_url + "result",
+        "Occasion": "Need"
+    }
+    
+    res = requests.post(endpoint, json=data, headers=headers)
+    return res.json()
+
+@pay_routes.route('/b2c/timeout', methods=['POST'])
+def b2c_timeout():
+    data = request.get_json()
+    print(data)
+    return "ok"
+
+
+@pay_routes.route('/b2c/result', methods=['POST'])
+def b2c_result():
+    data = request.get_json()
+    print(data)
     return "ok"
 
 @pay_routes.route('/get_pay')   
