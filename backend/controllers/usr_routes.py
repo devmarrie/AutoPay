@@ -46,23 +46,36 @@ def logout():
     logout_user()
     return jsonify({'message': 'User logged out successfully'})
 
-@users_routes.route('/get_users')   
-def get_users():
-    users =  User.query.all()
-    return jsonify([user.to_dict() for user in users])
+@users_routes.route('/view_profile') 
+@login_required  
+def view_profile():
+    user = current_user
+    return jsonify({
+        'username': user.username,
+        'phone_no': user.phone_no
+    })
 
 
-@users_routes.route('/update_user/<string:id>', methods=['PUT'])
-def update_user(id):
-    us = User.query.get(id)
-    if not us:
-        return jsonify({'error': 'User not found' }), 404
-    data = request.get_json()
-    us.name = data.get('name', us.name)
-    us.phone_no = data.get('phone_no', us.phone_no)
-    us.password = data.get('password', us.password)
+# def get_users():
+#     users =  User.query.all()
+#     return jsonify([user.to_dict() for user in users])
+
+
+@users_routes.route('/update_user', methods=['PUT'])
+def update_user():
+    user = current_user
+    username = request.form['username']
+    phone_no = request.form['phone_no']
+    password = request.form['password']
+
+    if username:
+        user.username = username
+    if phone_no:
+        user.phone_no = phone_no
+    if password:
+        user.password = password
     db.session.commit()
-    return jsonify(us.to_dict())    
+    return jsonify(user.to_dict())    
 
 @users_routes.route('/delete_user/<string:id>', methods=['DELETE'])
 def del_need(id):
