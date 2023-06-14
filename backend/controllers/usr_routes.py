@@ -1,38 +1,50 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, redirect, url_for
 from models.user import User
 from models.database import db
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask_httpauth import HTTPBasicAuth
-
+from flask_login import login_user, logout_user
+from flask_user import current_user, login_required, roles_required, roles_accepted
 
 users_routes = Blueprint('user_routes', __name__)
-auth = HTTPBasicAuth()
 
 """Users routes"""
-@users_routes.route('/new_user', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    name = data['name']
-    phone_no = data['phone_no']
-    password = data['password']
-    hashed_pwd = generate_password_hash(password)
-    usr = User(name=name, phone_no=phone_no, password=hashed_pwd)
-    db.session.add(usr)
-    db.session.commit()
-    return jsonify({'message': 'User created succesfully'})
+@users_routes.route('/register', methods=['GET', 'POST'])
+def register():
+    if current_user.is_authenticated:
+        return jsonify({"message": "User Authenticated"})
+        # return redirect(url_for('dashboard'))
+    if request.method == 'POST':
+        username = request.form['username']
+        unhashed = request.form['password']
+        phone_no = request.form['phone_no']
 
-@auth.verify_password
-def verify_password(username, password):
-     users =  User.query.all()
-     if username in users and check_password_hash(users.get(username), password):
-         return username
-     
-@users_routes.route('/protected')
-@auth.login_required
-def protected_route():
-    return 'You are authenticated!'
+        password = generate_password_hash(unhashed)
+        usr = User(username=username, phone_no=phone_no, password=password)
+        db.session.add(usr)
+        db.session.commit()
+        #return redirect(url_for('login'))
+        return jsonify({'message': 'User registered succesfully'})
 
+@users_routes.route('/login', methods=['GET','POST'])
+def login():
+    if current_user.is_authenticated:
+        return jsonify({"message": "User Authenticated"})
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+    
+        user = User.query.filter_by(username=username).first()
+        if user and check_password_hash(user.password, password):
+           login_user(user)
+           return jsonify({'message': 'User logged in successfully'})
+        else:
+            return jsonify({'error': 'Invalid credentials'}), 401
 
+@users_routes.route('/logout', methods=['POST'])
+@login_required
+def logout():
+    logout_user()
+    return jsonify({'message': 'User logged out successfully'})
 
 @users_routes.route('/get_users')   
 def get_users():
