@@ -1,19 +1,21 @@
 from flask import Blueprint, jsonify, request
-from flask_mpesa import MpesaAPI
 from models.pay import Pay
 from models.database import db
+from dotenv import load_dotenv
 import requests
 from datetime import datetime
+import os
 import base64
-
+import json
 
 pay_routes = Blueprint('pay_routes', __name__)
 
-mpesa_api = MpesaAPI()
+load_dotenv()
+
 # mpesa details
-consumer_key = 'b3G7K3Rr7TMaJiOXfeoBW97R71aN7uC9'
-consumer_secret = 'X3qaq8XnvnfFJXcm'
-callback_url = 'https://13b4-197-232-61-201.ngrok-free.app'
+consumer_key = os.getenv('CONSUMER_KEY')
+consumer_secret = os.getenv('CONSUMER_SECRET')
+callback_url = os.getenv('CALLBACK_URL')
 
 """The authentication process to obtain the access token"""
 def token():
@@ -26,6 +28,49 @@ def token():
         return "Authentication failed", 401
     
 """Register urls"""
+@pay_routes.route('/register')
+def register_urls():
+     endpoint = 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl'
+     access_token = token()
+     headers = { "Authorization": "Bearer %s" % access_token }
+     reg_data = {
+        "ShortCode": "600383",
+        "ResponseType": "Completed",
+        "ConfirmationURL": callback_url + '/confirm',
+        "ValidationURL": callback_url + '/validate'
+    }
+
+     response = requests.post(endpoint, json = reg_data, headers = headers)
+     return response.json()
+
+@pay_routes.route('/confirm')
+def confirm():
+    data = request.get_json()
+    return data
+
+@pay_routes.route('/validate')
+def validate():
+    data = request.get_json()
+    return data
+
+## simulate
+@pay_routes.route('/simulate')
+def test_payment():
+    endpoint = 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/simulate'
+    access_token = token()
+    headers = { "Authorization": "Bearer %s" % access_token }
+
+    data_s = {
+        "Amount": 1,
+        "ShortCode": "600383",
+        "BillRefNumber": "test",
+        "CommandID": "CustomerPayBillOnline",
+        "Msisdn": "254708374149"
+    }
+
+    res = requests.post(endpoint, json= data_s, headers = headers)
+    return res.json()
+
 
 @pay_routes.route('/mpesa_accesstoken', methods=['GET'])
 def authenticate():
@@ -68,9 +113,12 @@ def create_payment():
 @pay_routes.route("/stk_pay", methods=['POST'])
 def incoming():
     info = request.get_data()
-    callback_metadata = info['stkCallback']['CallbackMetadata']
-    items = callback_metadata['Item']
-    print(items)
+    f = open('stk.json', 'a')
+    f.write(json.dump(info))
+    f.close()
+    # callback_metadata = info['stkCallback']['CallbackMetadata']
+    # items = callback_metadata['Item']
+    # print(items)
 
     # for item in items:
     #     if item['Name'] == 'Amount':
@@ -102,10 +150,10 @@ def settle_payments():
 
     data = {
         "InitiatorName": "testapi",
-        "SecurityCredential": "Pq5zXRgb7Fs/JA5D1vKYp6/3Ui7Sx+p9pxK2RdzI5l+o1FEsmiQWHnDnaQ8ivx4hit/KirZBXfDCAiksxtVgrODGeSAv4GIB6S7EHth1VQiexMYc2etBmvJNXrGzEg+mCySMX95URFRLwm+2Eaw45ei9CaqxIBZSNkovrLnS7pDkYZ82AAQulEpyr0HSVfZJ3u6tsNHNhwFj+pKf0bQ5xKIVzf+Ie1OwImrYWfA92gVG9va+zwNG/uZT59UJpTjS4/lPo+RTSHm35RrVpjQvfvZWlDmqK9CMNtL55i00SShpSHcuYM5sqCGzy7lbkWEh18qwcFXvXkNm/6sqhLltnQ==",
+        "SecurityCredential": os.getenv('SECURITY_CREDENTIALS'),
         "CommandID": "BusinessPayment",
         "Amount": amount,
-        "PartyA": "174379",
+        "PartyA": "600383",
         "PartyB": mpesano,
         "Remarks": "Need paid successfully",
         "QueueTimeOutURL": my_url + "timeout",
