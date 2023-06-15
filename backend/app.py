@@ -21,6 +21,12 @@ app.config['USER_EMAIL_SENDER_EMAIL'] = os.getenv('EMAIL')
 app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = secret_key
 
+
+"""Mpesa Intergration"""
+app.config["API_ENVIRONMENT"] = "sandbox" #sandbox or production
+app.config["APP_KEY"] = os.getenv('CONSUMER_KEY')# App_key from developers portal
+app.config["APP_SECRET"] = os.getenv('CONSUMER_SECRET') #App_Secret from developers portal
+
 init_db(app)
 migrate = Migrate(app, db)
 
