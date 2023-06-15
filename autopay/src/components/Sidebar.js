@@ -38,7 +38,7 @@ function Sidebar() {
 export default Sidebar
 
 const Container = styled.div`
-background: #ffffff;
+background: #fcfeff;
 `
 const Logo = styled.div`
 height: 95px;
