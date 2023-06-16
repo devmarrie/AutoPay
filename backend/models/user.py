@@ -9,3 +9,4 @@ class User(BaseModel, UserMixin):
     password = db.Column(db.String(260), nullable=False)
     #payments = db.relationship('Pay', backref='users')
     needs = db.relationship('Need', backref='users')
+    histories = db.relationship('History', backref='users')
