@@ -4,6 +4,7 @@ from models.need import Need
 from models.user import User
 from models.database import db
 from datetime import datetime, timedelta
+from flask_user import current_user, login_required
 import africastalking
 import phonenumbers
 
@@ -26,21 +27,21 @@ def send_sms(to, message):
 
 """Needs routes"""
 @need_routes.route('/add_need', methods=['POST'])
+@login_required
 def add_need():
     data = request.get_json()
     need = data['need']
     amount = data['amount']
     duedate = datetime.strptime(data['duedate'], '%H:%M:%S %d-%m-%Y')
     storable_date = duedate.strftime('%Y-%m-%d %H:%M:%S')
-    user_id = data['user_id']
-    history_id = data['history_id']
+    user_id = current_user.id
 
     user = User.query.get(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
 
     ned = Need(need=need, amount=amount, duedate=storable_date,
-               user_id=user_id, history_id=history_id )
+               user_id=user_id)
     
 
     parsed_number = phonenumbers.parse(user.phone_no, None)
