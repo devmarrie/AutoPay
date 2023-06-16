@@ -3,9 +3,12 @@ from models.user import User
 from models.database import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import login_user, logout_user
-from flask_user import current_user, login_required, roles_required, roles_accepted
+from flask_user import current_user, login_required, current_app
+from flask import session
+
 
 users_routes = Blueprint('user_routes', __name__)
+
 
 """Users routes"""
 @users_routes.route('/register', methods=['GET', 'POST'])
@@ -14,9 +17,10 @@ def register():
         return jsonify({"message": "User Authenticated"})
         # return redirect(url_for('dashboard'))
     if request.method == 'POST':
-        username = request.form['username']
-        unhashed = request.form['password']
-        phone_no = request.form['phone_no']
+        data = request.get_json()
+        username = data['username']
+        unhashed = data['password']
+        phone_no = data['phone_no']
 
         password = generate_password_hash(unhashed)
         usr = User(username=username, phone_no=phone_no, password=password)
@@ -24,21 +28,29 @@ def register():
         db.session.commit()
         #return redirect(url_for('login'))
         return jsonify({'message': 'User registered succesfully'})
+        
 
 @users_routes.route('/login', methods=['GET','POST'])
 def login():
     if current_user.is_authenticated:
         return jsonify({"message": "User Authenticated"})
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        data = request.get_json()
+        username = data['username']
+        password = data['password']
     
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
            login_user(user)
-           return jsonify({'message': 'User logged in successfully'})
+           return redirect(url_for('need_routes.add_need'))
+        #    session_cookie_name = session_manager.session_cookie_name
+        #    session_id = request.cookies.get(session_cookie_name)
+        #    response = jsonify({'message': 'User logged in successfully'})
+        #    response.set_cookie(current_app.config['SESSION_COOKIE_NAME'], session_id)
         else:
             return jsonify({'error': 'Invalid credentials'}), 401
+        # session_cookie = request.headers.cookies.get('id')
+        
 
 @users_routes.route('/logout', methods=['POST'])
 @login_required
