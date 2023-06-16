@@ -8,33 +8,44 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import styled from 'styled-components';
 import Pay from './components/Pay';
+import LogInUser from './components/LogInUser';
+
 
 function App() {
   return (
     <div className="App">
-      <Router>
-        <Container>
+      <Container>
+        <Room>
           <Sidebar />
+          <Router>
           <Routes>
             <Route path="/" element={<Login />} />
+            <Route path="/user" element={<LogInUser />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/history" element={<Payments />} />
             <Route path="/needs" element={<Needs />} />
             <Route path="/pay" element={<Pay />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
-        </Container>
-      </Router>
+          </Router>
+        </Room>
+      </Container>  
     </div>
   );
 }
 
+
 export default App;
 
 const Container = styled.div`
+background: #dee2e6;
+width: 100%;
+height: 100vh;
+
+`
+const Room = styled.div`
 width: 100%;
 height: 100vh;
 display: grid;
-background: #dee2e6;
 grid-template-columns: 260px auto;
 `
