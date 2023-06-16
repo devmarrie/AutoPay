@@ -1,4 +1,3 @@
-import React, { useState } from 'react'
 import styled from 'styled-components'
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
@@ -8,21 +7,40 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import { needsPresent } from '../data/NeedsData'
+import axios from 'axios';
 
 function Needs() {
-  const [query, setQuery] = useState("");
+  const handleOnsubmit = async (e) => {
+    e.preventDefault();
+    console.log(e.target)
+    const need = e.target.need.value;
+    const amount = e.target.amount.value;
+    const duedate = e.target.duedate.value;
 
-  const search = (data) => {
-    return data.filter((value) => value.need.toLowerCase().includes(query));
-  };
+    const data = {
+      "need": need,
+      "amount": amount,
+      "duedate": duedate
+    };
+
+    try {
+      console.log(data)
+      const response = await axios.post('http://127.0.0.1:5000/add_need', data, { withCredentials: true })
+      console.log(response.data)
+      alert('Need created successfully')
+      e.target.reset()
+    } catch (error) {
+      console.log(error);
+    }
+  }
   return (
     <ContainerNeeds>
       <NeedForm>
-        <Form>
-          <input type='text' placeholder='need name' className='need' />
-          <input type='text' placeholder='amount' className='amount' />
-          <input type='text' placeholder='due date(24-06-2023)' className='duedate' />
-          <Send>Send</Send>
+        <Form method='post' onSubmit={handleOnsubmit}>
+          <input type='text' placeholder='need' name='need' />
+          <input type='text' placeholder='amount' name='amount' />
+          <input type='text' placeholder='duedate(18:42:00 12-06-2023)' name='duedate' />
+          <Send type='submit'>Send</Send>
         </Form>
         <Picture>
           <Imgc>
@@ -94,7 +112,7 @@ grid-template-rows: 300px auto;
 const NeedForm = styled.div`
 display: flex;
 `
-const Form = styled.div`
+const Form = styled.form`
 width: 50%;
 display: flex;
 flex-direction: column;
@@ -127,7 +145,7 @@ img {
 }
 `
 
-const Send = styled.div`
+const Send = styled.button`
   height: 38px;
   width: 360px;
   background: #08711E;
