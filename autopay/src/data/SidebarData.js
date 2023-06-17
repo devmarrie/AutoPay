@@ -6,20 +6,20 @@ import PaymentsIcon from '@mui/icons-material/Payments';
 
 export const sidebarItems = [
     {
-        icon: <DashboardCustomizeIcon />,
-        text: "Dashboard"
-    },
-    {
-        icon: <ReceiptLongIcon />,
-        text: "Payment History"
+        icon: <PaymentsIcon />,
+        text: "Pay"
     },
     {
         icon: <AddCircleOutlineIcon />,
         text: "Needs"
     },
     {
-        icon: <PaymentsIcon />,
-        text: "Pay"
+        icon: <DashboardCustomizeIcon />,
+        text: "Dashboard"
+    },
+    {
+        icon: <ReceiptLongIcon />,
+        text: "Payment History"
     },
     {
         icon: <SettingsOutlinedIcon />,
