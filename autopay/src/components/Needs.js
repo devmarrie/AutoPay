@@ -25,7 +25,7 @@ function Needs() {
 
     try {
       console.log(data)
-      const response = await axios.post('http://127.0.0.1:5000/add_need', data, { withCredentials: true })
+      const response = await axios.post('http://127.0.0.1:5000/add_need', data)
       console.log(response.data)
       alert('Need created successfully')
       e.target.reset()
@@ -166,32 +166,7 @@ padding-left: 28px;
 padding-right: 28px;
 `
 
-const ContentToNeedTable = styled.div`
-width:65%
-height:300px;
-table {
-  width: 100%;
-  border-spacing: 15px;
-  border-radius: 6px;
-  color: #444;
-  background: #ffffff;
-}
 
-tr {
-  margin-bottom: 20px;
-}
-
-th {
-  width: 250px;
-  text-align: left;
-  font-size: 20px;
-}
-
-td {
-  width: 200px;
-  font-size: 20px;
-}
-`
 const Toa = styled.div`
 background: #ea1535;
 width:68px;
