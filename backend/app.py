@@ -1,8 +1,8 @@
 from flask import Flask
 from models.database import db, init_db
 from flask_migrate import Migrate
-from flask_user import UserManager, current_user
-from flask_login import LoginManager
+from flask_user import UserManager
+from flask_login import LoginManager, current_user, login_required
 from dotenv import load_dotenv
 from models.user import User
 from flask_cors import CORS
@@ -39,13 +39,7 @@ migrate = Migrate(app, db)
 """User Intergrations"""
 user_manager = UserManager(app, db, User)
 
-"""user loader"""
-login_manager = LoginManager(app)
-login_manager.login_view = 'user.login'
 
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(str(user_id))
 
 #csrf = CSRFProtect(app)
 
@@ -57,6 +51,14 @@ app.register_blueprint(need_routes, current_user=current_user)
 app.register_blueprint(users_routes, current_user=current_user)
 app.register_blueprint(pay_routes, current_user=current_user)
 app.register_blueprint(hist_routes, current_user=current_user)
+
+"""user loader"""
+login_manager = LoginManager(app)
+#login_manager.login_view = 'usr_routes.login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(user_id)
 
 @app.route("/")
 def home():
