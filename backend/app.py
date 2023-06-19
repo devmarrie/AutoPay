@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask,session,redirect,request
 from models.database import db, init_db
 from flask_migrate import Migrate
 from flask_user import UserManager
@@ -11,6 +11,12 @@ from controllers import need_routes, users_routes, pay_routes, hist_routes
 import os
 import secrets
 
+# Google OAuth libraries
+from google_auth_oauthlib.flow import Flow
+from google.oauth2 import id_token
+from google.auth.transport import requests
+
+
 app = Flask(__name__)
 CORS(app, origins=['http://localhost:3000'], 
      methods=['GET', 'POST', 'PUT', 'DELETE'], 
@@ -18,11 +24,17 @@ CORS(app, origins=['http://localhost:3000'],
 
 load_dotenv()
 
+# Load environment variables
+GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
+app.secret_key = secrets.token_hex(16)
+GOOGLE_REDIRECT_URI = '/google/auth/callback'
+
 # Db configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
 app.config['USER_EMAIL_SENDER_EMAIL'] = os.getenv('EMAIL')
 app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = secrets.token_hex(16)
+#app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['SESSION_TYPE'] = 'filesystem'
 
 
@@ -30,6 +42,11 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config["API_ENVIRONMENT"] = "sandbox" #sandbox or production
 app.config["APP_KEY"] = os.getenv('CONSUMER_KEY')# App_key from developers portal
 app.config["APP_SECRET"] = os.getenv('CONSUMER_SECRET') #App_Secret from developers portal
+
+app.register_blueprint(need_routes, current_user=current_user)
+app.register_blueprint(users_routes, current_user=current_user)
+app.register_blueprint(pay_routes, current_user=current_user)
+app.register_blueprint(hist_routes, current_user=current_user)
 
 Session(app)
 
@@ -39,18 +56,11 @@ migrate = Migrate(app, db)
 """User Intergrations"""
 user_manager = UserManager(app, db, User)
 
-
-
 #csrf = CSRFProtect(app)
 
 # Once connectivity is established create the tables
 with app.app_context():
     db.create_all()
-
-app.register_blueprint(need_routes, current_user=current_user)
-app.register_blueprint(users_routes, current_user=current_user)
-app.register_blueprint(pay_routes, current_user=current_user)
-app.register_blueprint(hist_routes, current_user=current_user)
 
 """user loader"""
 login_manager = LoginManager(app)
@@ -59,6 +69,39 @@ login_manager = LoginManager(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+# Google OAuth flow
+flow = Flow.from_client_secrets_file(
+    'client_secrets.json',
+    scopes=['openid', 'email', 'profile'],
+    redirect_uri=GOOGLE_REDIRECT_URI
+)
+
+@app.route('/google/auth')
+def google_auth():
+    authorization_url, state = flow.authorization_url()
+    session['state'] = state
+    return redirect(authorization_url)
+
+@app.route(GOOGLE_REDIRECT_URI)
+def google_auth_callback():
+    state = session.pop('state', None)
+    flow.fetch_token(authorization_response=request.url, state=state)
+    credentials = flow.credentials
+    
+    # Get user details using the Google Sign-In API
+    from google.oauth2 import id_token
+    from google.auth.transport import requests
+    id_info = id_token.verify_oauth2_token(
+        credentials.id_token, requests.Request(), GOOGLE_CLIENT_ID)
+    
+    # Print user details
+    print("User ID:", id_info['sub'])
+    print("Email:", id_info['email'])
+    print("Name:", id_info['name'])
+    print("Profile Picture URL:", id_info['picture'])
+    
+    return "Successfully authenticated!"
 
 @app.route("/")
 def home():
