@@ -42,14 +42,15 @@ def login():
         user = User.query.filter_by(username=username).first()
         if user and check_password_hash(user.password, password):
            login_user(user, remember=True)
-           return jsonify({'message': 'User logged in successfully'})
+           return  redirect(url_for('need_routes.add_need'))
            #return redirect('http://localhost:3000/needs')
         #    session_cookie_name = session_manager.session_cookie_name
         #    session_id = request.cookies.get(session_cookie_name)
         #    response = jsonify({'message': 'User logged in successfully'})
         #    response.set_cookie(current_app.config['SESSION_COOKIE_NAME'], session_id)
         else:
-            return jsonify({'error': 'Invalid credentials'}), 401
+            return redirect(url_for('register'))
+        #jsonify({'error': 'Invalid credentials'}), 401
         # session_cookie = request.headers.cookies.get('id')
         
 
@@ -60,13 +61,17 @@ def logout():
     return jsonify({'message': 'User logged out successfully'})
 
 @users_routes.route('/view_profile') 
-@login_required  
 def view_profile():
-    user = current_user
-    return jsonify({
-        'username': user.username,
-        'phone_no': user.phone_no
-    })
+    if 'user_id' in session:
+        user_id = session['user_id']
+        user = User.query.filter_by(id=user_id).first()
+        return jsonify(f'{user_id}: {user}')
+    
+    # user = current_user
+    # return jsonify({
+    #     'username': user.username,
+    #     'phone_no': user.phone_no
+    # })
 
 
 # def get_users():
