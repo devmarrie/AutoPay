@@ -9,27 +9,18 @@ from flask_cors import CORS
 from flask_session import Session
 from controllers import need_routes, users_routes, pay_routes, hist_routes
 import os
-import secrets
 
-# Google OAuth libraries
-from google_auth_oauthlib.flow import Flow
-from google.oauth2 import id_token
-from google.auth.transport import requests
+#google auth
+GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
 
 
 app = Flask(__name__)
+app.secret_key = GOOGLE_CLIENT_SECRET
 CORS(app, origins=['http://localhost:3000'], 
      methods=['GET', 'POST', 'PUT', 'DELETE'], 
      headers=['Content-Type', 'Authorization'], supports_credentials=True)
 
 load_dotenv()
-
-# Load environment variables
-GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-app.secret_key = secrets.token_hex(16)
-GOOGLE_REDIRECT_URI = '/google/auth/callback'
-
 # Db configuration
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
 app.config['USER_EMAIL_SENDER_EMAIL'] = os.getenv('EMAIL')
@@ -70,36 +61,29 @@ login_manager = LoginManager(app)
 def load_user(user_id):
     return User.query.get(user_id)
 
-# Google OAuth flow
-flow = Flow.from_client_secrets_file(
-    'client_secrets.json',
-    scopes=['openid', 'email', 'profile'],
-    redirect_uri=GOOGLE_REDIRECT_URI
-)
+# @app.route('/google/auth')
+# def google_auth():
+#     authorization_url, state = flow.authorization_url()
+#     session['state'] = state
+#     return redirect(authorization_url)
 
-@app.route('/google/auth')
-def google_auth():
-    authorization_url, state = flow.authorization_url()
-    session['state'] = state
-    return redirect(authorization_url)
-
-@app.route(GOOGLE_REDIRECT_URI)
-def google_auth_callback():
-    state = session.pop('state', None)
-    flow.fetch_token(authorization_response=request.url, state=state)
-    credentials = flow.credentials
+# @app.route(GOOGLE_REDIRECT_URI)
+# def google_auth_callback():
+#     state = session.pop('state', None)
+#     flow.fetch_token(authorization_response=request.url, state=state)
+#     credentials = flow.credentials
     
    
-    id_info = id_token.verify_oauth2_token(
-        credentials.id_token, requests.Request(), GOOGLE_CLIENT_ID)
+#     id_info = id_token.verify_oauth2_token(
+#         credentials.id_token, requests.Request(), GOOGLE_CLIENT_ID)
     
-    # Print user details
-    print("User ID:", id_info['sub'])
-    print("Email:", id_info['email'])
-    print("Name:", id_info['name'])
-    print("Profile Picture URL:", id_info['picture'])
+#     # Print user details
+#     print("User ID:", id_info['sub'])
+#     print("Email:", id_info['email'])
+#     print("Name:", id_info['name'])
+#     print("Profile Picture URL:", id_info['picture'])
     
-    return "Successfully authenticated!"
+#     return "Successfully authenticated!"
 
 @app.route("/")
 def home():
