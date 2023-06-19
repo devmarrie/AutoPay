@@ -1,4 +1,4 @@
-from flask import Flask,session,redirect,request
+from flask import Flask,session,redirect, request
 from models.database import db, init_db
 from flask_migrate import Migrate
 from flask_user import UserManager
@@ -89,9 +89,7 @@ def google_auth_callback():
     flow.fetch_token(authorization_response=request.url, state=state)
     credentials = flow.credentials
     
-    # Get user details using the Google Sign-In API
-    from google.oauth2 import id_token
-    from google.auth.transport import requests
+   
     id_info = id_token.verify_oauth2_token(
         credentials.id_token, requests.Request(), GOOGLE_CLIENT_ID)
     
