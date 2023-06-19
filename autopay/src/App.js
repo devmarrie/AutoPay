@@ -9,9 +9,11 @@ import Sidebar from './components/Sidebar';
 import styled from 'styled-components';
 import Pay from './components/Pay';
 import LogInUser from './components/LogInUser';
+import { useState } from 'react';
 
 
 function App() {
+  const [user, setUser] = useState()
   return (
     <div className="App">
       <Container>
