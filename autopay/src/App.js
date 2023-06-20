@@ -8,46 +8,58 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import styled from 'styled-components';
 import Pay from './components/Pay';
-import LogInUser from './components/LogInUser';
-import { useState } from 'react';
-
 
 function App() {
-  const [user, setUser] = useState()
   return (
     <div className="App">
       <Container>
-        <Room>
-          <Sidebar />
-          <Router>
+        <Router>
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/user" element={<LogInUser />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/history" element={<Payments />} />
-            <Route path="/needs" element={<Needs />} />
-            <Route path="/pay" element={<Pay />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/" element={<Home />} />
+            <Route element={<RoomWithSidebar />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/history" element={<Payments />} />
+              <Route path="/needs" element={<Needs />} />
+              <Route path="/pay" element={<Pay />} />
+              <Route path="/settings" element={<Settings />} />
+            </Route>
           </Routes>
-          </Router>
-        </Room>
-      </Container>  
+        </Router>
+      </Container>
     </div>
   );
 }
 
-
 export default App;
 
 const Container = styled.div`
-background: #dee2e6;
-width: 100%;
-height: 100vh;
+  background: #dee2e6;
+  width: 100%;
+  height: 100vh;
+`;
 
-`
-const Room = styled.div`
-width: 100%;
-height: 100vh;
-display: grid;
-grid-template-columns: 260px auto;
-`
+const Home = () => {
+  return <Login />;
+};
+
+const RoomWithSidebar = () => {
+  return (
+    <StyledRoom>
+      <Sidebar />
+      <Routes>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/history" element={<Payments />} />
+        <Route path="/needs" element={<Needs />} />
+        <Route path="/pay" element={<Pay />} />
+        <Route path="/settings" element={<Settings />} />
+      </Routes>
+    </StyledRoom>
+  );
+};
+
+const StyledRoom = styled.div`
+  width: 100%;
+  height: 100vh;
+  display: grid;
+  grid-template-columns: 260px auto;
+`;
