@@ -4,6 +4,7 @@ import {sidebarItems} from '../data/SidebarData'
 import LogoutIcon from '@mui/icons-material/Logout';
 
 function Sidebar() {
+  
   return (
     <Container>
         <Logo>
@@ -15,7 +16,7 @@ function Sidebar() {
         <Pages>
             {
               sidebarItems.map(item => (
-                <Channel>
+                <Channel >
                   {item.icon}
                   {item.text}
                 </Channel>
@@ -72,7 +73,12 @@ padding:8px;
 border-radius: 3px;
 cursor: pointer;
 margin-left: 28px;
+
 :hover {
+  background: #08711E;
+  color: #ffffff;
+}
+&:active {
   background: #08711E;
   color: #ffffff;
 }
