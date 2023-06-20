@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import requests
 from flask import Flask, session, abort, redirect, request, Blueprint
 from flask_login import current_user, login_user, logout_user
+from flask_cors import cross_origin
 
 # Google OAuth libraries
 from google.oauth2 import id_token
@@ -54,10 +55,11 @@ flow = Flow.from_client_secrets_file(
 #     return wrapper
 @users_routes.route("/sign-in")
 def signin():
-    return redirect("get_needs", user=current_user)
+    return "Already logged in"
 
 # Initiate Google Auth
 @users_routes.route("/login")
+@cross_origin(origins='http://127.0.0.1:3000', supports_credentials=True)
 def login():
     """ Check user login """
     authorization_url, state = flow.authorization_url()
@@ -70,7 +72,7 @@ def callback():
     """ Initiate Google OAuth2 flow """
     flow.fetch_token(authorization_response=request.url)
 
-    if not session["state"] == request.args["state"]:
+    if "state" not in session or session["state"] != request.args.get("state"):
         abort(500)  # State does not match!
 
     credentials = flow.credentials
@@ -84,35 +86,35 @@ def callback():
         audience=GOOGLE_CLIENT_ID
     )
     
-    # # Print user details
-    # print("User ID:", id_info['sub'])
-    # print("Email:", id_info['email'])
-    # print("Name:", id_info['name'])
-    # print("Profile Picture URL:", id_info['picture'])
+    # Print user details
+    print("User ID:", id_info['sub'])
+    print("Email:", id_info['email'])
+    print("Name:", id_info['name'])
+    print("Profile Picture URL:", id_info['picture'])
     
-    # return "Successfully authenticated!"
+    return "Successfully authenticated!"
 
     # Check if user with same google id already exists
-    user = User.query.filter_by(google_id=id_info.get("sub")).first()
+    # user = User.query.filter_by(google_id=id_info.get("sub")).first()
     
-    # Log in user if user exists
-    if user:
-        login_user(user)
-        return "Already signed in"
+    # # Log in user if user exists
+    # if user:
+    #     login_user(user)
+    #     return redirect("add_need")
 
-    # Create a new User if google_id is not in database
-    new_user = User(
-        google_id=id_info.get("sub"),
-        name=id_info.get("name"),
-        email=id_info.get("email"),
-        avatar_url=id_info.get("picture")
-    )
-    db.session.add(new_user)
-    db.session.commit()
+    # # Create a new User if google_id is not in database
+    # new_user = User(
+    #     google_id=id_info.get("sub"),
+    #     name=id_info.get("name"),
+    #     email=id_info.get("email"),
+    #     avatar_url=id_info.get("picture")
+    # )
+    # db.session.add(new_user)
+    # db.session.commit()
 
     # Log in new user
-    login_user(new_user)
-    return "Successfully athenticated"
+    # login_user(new_user)
+    # return redirect("add_need")
 
 
 # Route to log out user
