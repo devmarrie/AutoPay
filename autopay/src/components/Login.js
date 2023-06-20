@@ -1,47 +1,56 @@
 import React from 'react'
 import styled from 'styled-components'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-
+import { useNavigate } from 'react-router-dom';
 
 
 function Login() {
   const navigate = useNavigate();
-  const handleOnsubmit = async (e) =>{
-    e.preventDefault();
-    const username = e.target.username.value;
-    const phone_no = e.target.phone_no.value;
-    const password = e.target.password.value;
+  const handleOnClick = () => {
+    axios.get('http://127.0.0.1:5000/login', { withCredentials: true })
+    .then(response => {
+      console.log(response);
+      navigate('/needs')
+    })
+    .catch(error => {
+      console.error(error);
+    });
+  };
+  // const handleOnsubmit = async (e) =>{
+  //   e.preventDefault();
+  //   const username = e.target.username.value;
+  //   const phone_no = e.target.phone_no.value;
+  //   const password = e.target.password.value;
   
-    const data = {
-      "username": username,
-      "password": password,
-      "phone_no": phone_no
-    };
-    try {
-      console.log(data)
-      const response = await axios.post('http://127.0.0.1:5000/register', data);
-      console.log(response.data)
-      alert("User registered successfully!");
-      e.target.reset();
-      navigate('/user');
-    } catch (error) {
-      console.log(error);
-    }
-  }
+  //   const data = {
+  //     "username": username,
+  //     "password": password,
+  //     "phone_no": phone_no
+  //   };
+  //   try {
+  //     console.log(data)
+  //     const response = await axios.post('http://127.0.0.1:5000/register', data);
+  //     console.log(response.data)
+  //     alert("User registered successfully!");
+  //     e.target.reset();
+  //     navigate('/user');
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  // }
 
   return (
     <Kishikio>
       <Container>
         <Picture><img src={process.env.PUBLIC_URL + '/images/user_dashboard.png'} alt='logo' /></Picture>
         <Details>
-          <Text> Sign Up for Autopay</Text>
-          <OtherSide method='post' onSubmit={handleOnsubmit}>
-          <input type='text' placeholder='user name' name='username' />
+          <Text> Sign In for Autopay</Text>
+          <OtherSide>
+          {/* <input type='text' placeholder='user name' name='username' />
           <input type='text' placeholder='phone number(254712345678)' name='phone_no' />
-          <input type='text' placeholder='password' name='password' />
-          <Send type='submit'>
-            Sign In
+          <input type='text' placeholder='password' name='password' /> */}
+          <Send type='submit' onClick={handleOnClick}>
+            Sign In with Google
           </Send>
           </OtherSide>
         </Details>
@@ -59,6 +68,7 @@ align-items: center;
 justify-content: center;
 `
 const Container = styled.div`
+margin-top:120px;
 width: 80%;
 height: 80%;
 display: flex;
@@ -86,7 +96,7 @@ align-items: center;
 justify-content: center;
 
 `
-const OtherSide = styled.form`
+const OtherSide = styled.div`
 display: flex;
 flex-direction: column;
 align-items: center;
