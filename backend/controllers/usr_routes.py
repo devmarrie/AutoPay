@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 # flask libraries
 import requests
-from flask import Flask, session, abort, redirect, request, Blueprint
+from flask import Flask, session, abort, redirect, request, Blueprint,jsonify
 from flask_login import current_user, login_user, logout_user
 from flask_cors import cross_origin
 
@@ -43,19 +43,9 @@ flow = Flow.from_client_secrets_file(
     redirect_uri="http://127.0.0.1:5000/login/callback"
 )
 
-
-# """Custom Authentication decorator function"""
-# def login_is_required(function):
-#     def wrapper(*args, **kwargs):
-#         if "google_id" not in session:
-#             return abort(401)  # Authorization required
-#         else:
-#             return function(*args, **kwargs)
-
-#     return wrapper
 @users_routes.route("/sign-in")
 def signin():
-    return "Already logged in"
+    return redirect("http://127.0.0.1:3000/needs")
 
 # Initiate Google Auth
 @users_routes.route("/login")
@@ -70,51 +60,47 @@ def login():
 @users_routes.route("/login/callback", methods=['GET', 'POST'])
 def callback():
     """ Initiate Google OAuth2 flow """
-    flow.fetch_token(authorization_response=request.url)
+    try:
+        flow.fetch_token(authorization_response=request.url)
 
-    if "state" not in session or session["state"] != request.args.get("state"):
-        abort(500)  # State does not match!
+        if "state" not in session or session["state"] != request.args.get("state"):
+            return jsonify({"error": "Invalid state"}), 400
 
-    credentials = flow.credentials
-    request_session = requests.session()
-    cached_session = cachecontrol.CacheControl(request_session)
-    token_request = google.auth.transport.requests.Request(session=cached_session)
+        credentials = flow.credentials
+        request_session = requests.session()
+        cached_session = cachecontrol.CacheControl(request_session)
+        token_request = google.auth.transport.requests.Request(session=cached_session)
 
-    id_info = id_token.verify_oauth2_token(
-        id_token=credentials._id_token,
-        request=token_request,
-        audience=GOOGLE_CLIENT_ID
-    )
-    
-    # Print user details
-    print("User ID:", id_info['sub'])
-    print("Email:", id_info['email'])
-    print("Name:", id_info['name'])
-    print("Profile Picture URL:", id_info['picture'])
-    
-    return "Successfully authenticated!"
+        id_info = id_token.verify_oauth2_token(
+            id_token=credentials._id_token,
+            request=token_request,
+            audience=GOOGLE_CLIENT_ID
+        )
 
-    # Check if user with same google id already exists
-    # user = User.query.filter_by(google_id=id_info.get("sub")).first()
-    
-    # # Log in user if user exists
-    # if user:
-    #     login_user(user)
-    #     return redirect("add_need")
+        # Check if user with same google id already exists
+        user = User.query.filter_by(google_id=id_info.get("sub")).first()
 
-    # # Create a new User if google_id is not in database
-    # new_user = User(
-    #     google_id=id_info.get("sub"),
-    #     name=id_info.get("name"),
-    #     email=id_info.get("email"),
-    #     avatar_url=id_info.get("picture")
-    # )
-    # db.session.add(new_user)
-    # db.session.commit()
+        # Log in user if user exists
+        if user:
+            login_user(user)
+            return redirect("http://127.0.0.1:3000/needs")
 
-    # Log in new user
-    # login_user(new_user)
-    # return redirect("add_need")
+        # Create a new User if google_id is not in the database
+        new_user = User(
+            google_id=id_info.get("sub"),
+            name=id_info.get("name"),
+            email=id_info.get("email"),
+            avatar_url=id_info.get("picture")
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        # Log in new user
+        login_user(new_user)
+        return redirect("http://127.0.0.1:3000/needs")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # Route to log out user
