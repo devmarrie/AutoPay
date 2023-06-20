@@ -18,7 +18,9 @@ app = Flask(__name__)
 app.secret_key = GOOGLE_CLIENT_SECRET
 CORS(app, origins=['http://localhost:3000'], 
      methods=['GET', 'POST', 'PUT', 'DELETE'], 
-     headers=['Content-Type', 'Authorization'], supports_credentials=True)
+     headers=['Content-Type', 'Authorization'],
+    supports_credentials=True
+    )
 
 load_dotenv()
 # Db configuration
