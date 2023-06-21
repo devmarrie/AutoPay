@@ -6,9 +6,12 @@ from flask_login import LoginManager, current_user, login_required
 from dotenv import load_dotenv
 from models.user import User
 from flask_cors import CORS
+from flask_bcrypt import Bcrypt
 from flask_session import Session
 from controllers import need_routes, users_routes, pay_routes, hist_routes
 import os
+import secrets
+import redis
 
 #google auth
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
@@ -27,8 +30,15 @@ load_dotenv()
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
 app.config['USER_EMAIL_SENDER_EMAIL'] = os.getenv('EMAIL')
 app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
-#app.config['SECRET_KEY'] = secrets.token_hex(16)
+app.config['SQLACHEMY_ECHO'] = True
+app.config['SECRET_KEY'] = secrets.token_hex(16)
 app.config['SESSION_TYPE'] = 'filesystem'
+
+"""Session config"""
+app.config['SESSION_TYPE'] = 'redis'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_REDIS'] = redis.from_url('redis://127.0.0.1:6379')
 
 
 """Mpesa Intergration"""
@@ -36,16 +46,12 @@ app.config["API_ENVIRONMENT"] = "sandbox" #sandbox or production
 app.config["APP_KEY"] = os.getenv('CONSUMER_KEY')# App_key from developers portal
 app.config["APP_SECRET"] = os.getenv('CONSUMER_SECRET') #App_Secret from developers portal
 
-app.register_blueprint(need_routes, current_user=current_user)
-app.register_blueprint(users_routes, current_user=current_user)
-app.register_blueprint(pay_routes, current_user=current_user)
-app.register_blueprint(hist_routes, current_user=current_user)
-
 Session(app)
 
 init_db(app)
 migrate = Migrate(app, db)
 
+Bcrypt(app)
 """User Intergrations"""
 user_manager = UserManager(app, db, User)
 
@@ -62,6 +68,11 @@ login_manager = LoginManager(app)
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(user_id)
+
+app.register_blueprint(need_routes, current_user=current_user)
+app.register_blueprint(users_routes, current_user=current_user)
+app.register_blueprint(pay_routes, current_user=current_user)
+app.register_blueprint(hist_routes, current_user=current_user)
 
 # @app.route('/google/auth')
 # def google_auth():
