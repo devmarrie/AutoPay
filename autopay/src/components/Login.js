@@ -1,43 +1,59 @@
 import React from 'react'
 import styled from 'styled-components'
-import axios from 'axios'
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios';
 
 function Login() {
-  const navigate = useNavigate();
-  const handleOnClick = () => {
-    axios.get('http://127.0.0.1:5000/login', { withCredentials: true })
-    .then(response => {
-      console.log(response);
-      navigate('/needs')
-    })
-    .catch(error => {
-      console.error(error);
-    });
-  };
-  // const handleOnsubmit = async (e) =>{
-  //   e.preventDefault();
-  //   const username = e.target.username.value;
-  //   const phone_no = e.target.phone_no.value;
-  //   const password = e.target.password.value;
+  // const responseMessage = (response) => {
+  //   const accessToken = response.accessToken;
+    
+  //   // Send the access token to the backend
+  //   axios.post('/login', { accessToken })
+  //     .then((res) => {
+  //       console.log(res.data.message);
+  //       // Handle successful registration
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //       // Handle registration error
+  //     });
+  // };
   
-  //   const data = {
-  //     "username": username,
-  //     "password": password,
-  //     "phone_no": phone_no
-  //   };
+  // const errorMessage = (error) => {
+  //   console.log(error);
+  //   // Handle error message
+  // };
+  // const handleLogin = async () => {
   //   try {
-  //     console.log(data)
-  //     const response = await axios.post('http://127.0.0.1:5000/register', data);
-  //     console.log(response.data)
-  //     alert("User registered successfully!");
-  //     e.target.reset();
-  //     navigate('/user');
+  //     const response = await axios.get('http://localhost:5000/login');
+  //     window.location.href = response.data.redirect_url;
   //   } catch (error) {
-  //     console.log(error);
+  //     console.error('Error logging in:', error);
   //   }
-  // }
+  // };
+  const navigate = useNavigate()
+  const handleOnsubmit = async (e) =>{
+    e.preventDefault();
+    const username = e.target.username.value;
+    const phone_no = e.target.phone_no.value;
+    const password = e.target.password.value;
+  
+    const data = {
+      "username": username,
+      "password": password,
+      "phone_no": phone_no
+    };
+    try {
+      console.log(data)
+      const response = await axios.post('http://127.0.0.1:5000/sign-in', data);
+      console.log(response.data)
+      alert("User registered successfully!");
+      e.target.reset();
+      navigate('/user');
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   return (
     <Kishikio>
@@ -46,11 +62,11 @@ function Login() {
         <Details>
           <Text> Sign In for Autopay</Text>
           <OtherSide>
-          {/* <input type='text' placeholder='user name' name='username' />
-          <input type='text' placeholder='phone number(254712345678)' name='phone_no' />
-          <input type='text' placeholder='password' name='password' /> */}
-          <Send type='submit' onClick={handleOnClick}>
-            Sign In with Google
+          <input type='text' placeholder='username' name='username' />
+          <input type='text' placeholder='phonenumber(254712345678)' name='phone_no' />
+          <input type='text' placeholder='password' name='password' /> 
+           <Send onClick={handleOnsubmit}>
+            Sign in 
           </Send>
           </OtherSide>
         </Details>
