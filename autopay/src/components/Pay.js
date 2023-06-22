@@ -1,30 +1,45 @@
 import React from 'react'
 import styled from 'styled-components'
+import axios from 'axios';
 
 function Pay() {
+  const handleOnsubmit = async (e) => {
+    e.preventDefault();
+    // const sessionToken = localStorage.getItem('user_id');
+    console.log(e.target)
+    const need = e.target.need.value;
+    const amount = e.target.amount.value;
+    const number = e.target.number.value;
+    const code = e.target.code.value;
+
+    const data = {
+      "need": need,
+      "amount": amount,
+      "number": number,
+      "code": code
+    };
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/create_pay', data, {withCredentials: true});
+      console.log(response.data);
+      alert('Payment details registered successfully');
+      e.target.reset();
+      } catch (error) {
+       console.log(error);
+      }
+    };
   return (
     <Container>
-        <Form>
-          <input type='text' placeholder='need name' className='need' />
-          <input type='text' placeholder='amount' className='amount' />
-          <input type='text' placeholder='mpesa number' className='mpesa_number' />
-          <input type='text' placeholder='mpesa code' className='mpesa_code' />
-          <Send>Send</Send>
+        <Form method='post' onSubmit={handleOnsubmit}>
+          <input type='text' placeholder='needName' name='need' />
+          <input type='text' placeholder='amount' name='amount' />
+          <input type='text' placeholder='mpesaNumber' name='number' />
+          <input type='text' placeholder='mpesaCode' name='code' />
+          <Send type='submit'>Send</Send>
         </Form>
         <Image>
           <img src={process.env.PUBLIC_URL + '/images/monies.png'} alt='logo' />
         </Image>
-        {/* <PayCont>
-            <Type>Rent</Type>
-            <Details>
-                Amount:
-                5500
-            </Details>
-            <Transact>
-                Mpesa.no
-                <input type='text' placeholder='0712345678' className='number' />
-            </Transact>
-        </PayCont> */}
     </Container>
   )
 }
@@ -38,7 +53,7 @@ justify-content: space-between;
 padding-left:38px;
 `
 
-const Form = styled.div`
+const Form = styled.form`
 width: 400px;
 height: 75%;
 display: flex;
@@ -67,7 +82,7 @@ display: flex;
 align-items: center;
 justify-content: center;
 `
-const Send = styled.div`
+const Send = styled.button`
   height: 38px;
   width: 360px;
   background: #08711E;
