@@ -1,10 +1,22 @@
-import React from 'react'
+import React, {useState} from 'react'
 import styled from 'styled-components'
 import {sidebarItems} from '../data/SidebarData'
 import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from 'react-router-dom';
+
 
 function Sidebar() {
-  
+  const navigate = useNavigate()
+  const [selectedItem, setSelectedItem] = useState(null);
+
+  const handOnClickIt = (route, index) => {
+    setSelectedItem(index)
+    navigate(route);
+  }
+
+  const handleLogout = () => {
+    navigate('/user')
+  }
   return (
     <Container>
         <Logo>
@@ -15,8 +27,15 @@ function Sidebar() {
         </Logo>
         <Pages>
             {
-              sidebarItems.map(item => (
-                <Channel >
+              sidebarItems.map((item, index) => (
+                <Channel 
+                key={index} 
+                onClick={() => handOnClickIt(item.route, index)}
+                style={{
+                  backgroundColor: selectedItem === index ? '#08711E' : 'transparent',
+                  color: selectedItem === index ? '#ffffff' : 'black'
+                }}
+                >
                   {item.icon}
                   {item.text}
                 </Channel>
@@ -27,7 +46,7 @@ function Sidebar() {
           <Line></Line>
         </Stroke>
         <Signout>
-          <Channel>
+          <Channel onClick={ handleLogout }>
             <LogoutIcon />
             Log Out
           </Channel>
@@ -78,10 +97,7 @@ margin-left: 28px;
   background: #08711E;
   color: #ffffff;
 }
-&:active {
-  background: #08711E;
-  color: #ffffff;
-}
+
 `
 
 const Stroke = styled.div`
