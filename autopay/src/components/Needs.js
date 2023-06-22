@@ -12,6 +12,7 @@ import axios from 'axios';
 function Needs() {
   const handleOnsubmit = async (e) => {
     e.preventDefault();
+    // const sessionToken = localStorage.getItem('user_id');
     console.log(e.target)
     const need = e.target.need.value;
     const amount = e.target.amount.value;
@@ -24,15 +25,14 @@ function Needs() {
     };
 
     try {
-      console.log(data)
-      const response = await axios.post('http://127.0.0.1:5000/add_need', data)
-      console.log(response.data)
-      alert('Need created successfully')
-      e.target.reset()
-    } catch (error) {
-      console.log(error);
-    }
-  }
+      const response = await axios.post('http://127.0.0.1:5000/add_need', data, {withCredentials: true});
+      console.log(response.data);
+      alert('Need created successfully');
+      e.target.reset();
+      } catch (error) {
+       console.log(error);
+      }
+    };
   return (
     <ContainerNeeds>
       <NeedForm>
