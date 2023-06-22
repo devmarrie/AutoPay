@@ -1,10 +1,11 @@
-from flask import Blueprint, jsonify, request
-from apscheduler.schedulers.background import BackgroundScheduler
-from models.need import Need
-from models.user import User
+from flask import Blueprint, jsonify, request, session
 from models.database import db
+from models.user import User
+from apscheduler.schedulers.background import BackgroundScheduler
+from phonenumbers.phonenumberutil import NumberParseException
+from models.need import Need
 from datetime import datetime, timedelta
-from flask_user import current_user, login_required
+from flask_user import current_user
 import africastalking
 import phonenumbers
 
@@ -27,25 +28,38 @@ def send_sms(to, message):
 
 """Needs routes"""
 @need_routes.route('/add_need', methods=['POST'])
-@login_required
 def add_need():
     data = request.get_json()
     need = data['need']
     amount = data['amount']
+    phone_no = data['phone_no']
     duedate = datetime.strptime(data['duedate'], '%H:%M:%S %d-%m-%Y')
     storable_date = duedate.strftime('%Y-%m-%d %H:%M:%S')
-    user_id = current_user.id
 
-    user = User.query.get(user_id)
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
+    # user_id = session.get("user_id")
+    # if not user_id:
+    #     return jsonify({
+    #         "error": "Unathorized"
+    #     }), 401
+    
+    # user = User.query.filter_by(id=user_id).first()
+    # if user is None:
+    #     return jsonify({
+    #         "error": "User not found"
+    #     }), 404
+    # user_id = user.id
 
     ned = Need(need=need, amount=amount, duedate=storable_date,
-               user_id=user_id)
+               phone_no=phone_no)
     
 
-    parsed_number = phonenumbers.parse(user.phone_no, None)
-    formatted_no = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+    try:
+        parsed_number = phonenumbers.parse(phone_no, "KE")
+        formatted_no = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+    except NumberParseException as e:
+        return jsonify({
+            "error": f"Invalid phone number: {e}"
+        }), 400
 
     def send_three_minutes_before():
         send_sms(formatted_no, f'The payment for {need} is due soon')
