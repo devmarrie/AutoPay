@@ -8,6 +8,7 @@ import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import styled from 'styled-components';
 import Pay from './components/Pay';
+import LogInUser from './components/LogInUser'
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Router>
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path='/user' element={<After />} />
             <Route element={<RoomWithSidebar />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/history" element={<Payments />} />
@@ -40,6 +42,10 @@ const Container = styled.div`
 
 const Home = () => {
   return <Login />;
+};
+
+const After = () => {
+  return <LogInUser />;
 };
 
 const RoomWithSidebar = () => {
