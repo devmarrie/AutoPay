@@ -17,7 +17,7 @@ function Login() {
       "password": password,
     };
     try {
-      const response = await axios.post('http://127.0.0.1:5000/login', data);
+      const response = await axios.post('http://127.0.0.1:5000/login', data, {withCredentials: true});
       console.log(response.data)
       alert("Succesfully Logged in. Please create needs to proceed!");
       e.target.reset();
@@ -55,6 +55,7 @@ align-items: center;
 justify-content: center;
 `
 const Container = styled.div`
+margin-top:120px;
 width: 80%;
 height: 80%;
 display: flex;
