@@ -187,7 +187,20 @@ def b2c_result():
     print(data)
     return "ok"
 
-@pay_routes.route('/get_pay')   
+
+@pay_routes.route('/create_pay', methods=['POST'])
+def new_payment():
+    data = request.get_json()
+    need = data['need']
+    amount = data['amount']
+    number = data['number']
+    code = data['code']
+    new_payment = Pay(need=need, amount=amount, number=number, code=code)
+    db.session.add(new_payment)
+    db.session.commit()
+    return jsonify({"message":"Payment created successfully"})
+
+@pay_routes.route('/get_payments')   
 def get_pay():
     pm =  Pay.query.all()
     return jsonify([p.to_dict() for p in pm])
@@ -208,7 +221,7 @@ def update_pay(id):
 def del_pay(id):
     p = Pay.query.get(id)
     if p:
-        db.session. delete(p)
+        db.session.delete(p)
         db.session.commit()
         return jsonify({'message': f'Payment belonging to {id} deleted successfully'})
     else:
