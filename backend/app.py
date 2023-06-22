@@ -138,6 +138,18 @@ def view_details():
         "username": user.username
     })
 
+@app.route('/update_usr/<string:username>', methods=['PUT'])
+def update_need(username):
+    usr = User.query.filter_by(username=username).first()
+    if not usr:
+        return jsonify({'error': 'User not found' }), 404
+    data = request.get_json()
+    usr.username = data.get('username', usr.username)
+    usr.email = data.get('email', usr.email)
+    usr.password = data.get('password', usr.password)
+    db.session.commit()
+    return jsonify(usr.to_dict())
+
 # """Needs"""
 # # Africas Talking credentials
 # username = 'sandbox'
