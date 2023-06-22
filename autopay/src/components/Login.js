@@ -35,13 +35,13 @@ function Login() {
   const handleOnsubmit = async (e) =>{
     e.preventDefault();
     const username = e.target.username.value;
-    const phone_no = e.target.phone_no.value;
+    const email = e.target.email.value;
     const password = e.target.password.value;
   
     const data = {
       "username": username,
       "password": password,
-      "phone_no": phone_no
+      "email": email
     };
     try {
       console.log(data)
@@ -63,7 +63,7 @@ function Login() {
           <Text> Sign In for Autopay</Text>
           <OtherSide method='post' onSubmit={handleOnsubmit}>
           <input type='text' placeholder='username' name='username' />
-          <input type='text' placeholder='phonenumber(254712345678)' name='phone_no' />
+          <input type='text' placeholder='email' name='email' />
           <input type='text' placeholder='password' name='password' /> 
            <Send type='submit'>
             Sign in 
