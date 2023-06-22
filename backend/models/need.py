@@ -6,5 +6,6 @@ class Need(BaseModel):
     need = db.Column(db.String(50), unique=True, nullable=False)
     amount = db.Column(db.Integer(), nullable=False)
     duedate = db.Column(db.DateTime, nullable=False)
-    user_id = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
+    phone_no = db.Column(db.String(60),  unique=True, nullable=False)
+    #user_id = db.Column(db.String(60), db.ForeignKey('users.id'), nullable=False)
 
