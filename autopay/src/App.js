@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import './App.css';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
-import Payments from './components/Payments';
+import History from './components/History';
 import Needs from './components/Needs';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
@@ -20,7 +20,7 @@ function App() {
             <Route path='/user' element={<After />} />
             <Route element={<RoomWithSidebar />}>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/history" element={<Payments />} />
+              <Route path="/history" element={<History />} />
               <Route path="/needs" element={<Needs />} />
               <Route path="/pay" element={<Pay />} />
               <Route path="/settings" element={<Settings />} />
@@ -54,7 +54,7 @@ const RoomWithSidebar = () => {
       <Sidebar />
       <Routes>
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/history" element={<Payments />} />
+        <Route path="/history" element={<History />} />
         <Route path="/needs" element={<Needs />} />
         <Route path="/pay" element={<Pay />} />
         <Route path="/settings" element={<Settings />} />
