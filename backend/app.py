@@ -1,4 +1,4 @@
-from flask import Flask,session,redirect, request
+from flask import Flask,session,redirect, request, jsonify
 from models.database import db, init_db
 from flask_migrate import Migrate
 from flask_user import UserManager
@@ -15,7 +15,6 @@ import redis
 
 #google auth
 GOOGLE_CLIENT_SECRET = os.getenv('GOOGLE_CLIENT_SECRET')
-
 
 app = Flask(__name__)
 app.secret_key = GOOGLE_CLIENT_SECRET
@@ -51,7 +50,7 @@ Session(app)
 init_db(app)
 migrate = Migrate(app, db)
 
-Bcrypt(app)
+bcrypt = Bcrypt(app)
 """User Intergrations"""
 user_manager = UserManager(app, db, User)
 
@@ -69,34 +68,145 @@ login_manager = LoginManager(app)
 def load_user(user_id):
     return User.query.get(user_id)
 
-app.register_blueprint(need_routes, current_user=current_user)
-app.register_blueprint(users_routes, current_user=current_user)
-app.register_blueprint(pay_routes, current_user=current_user)
-app.register_blueprint(hist_routes, current_user=current_user)
 
-# @app.route('/google/auth')
-# def google_auth():
-#     authorization_url, state = flow.authorization_url()
-#     session['state'] = state
-#     return redirect(authorization_url)
+app.register_blueprint(users_routes)
+app.register_blueprint(need_routes)
+app.register_blueprint(pay_routes)
+app.register_blueprint(hist_routes)
 
-# @app.route(GOOGLE_REDIRECT_URI)
-# def google_auth_callback():
-#     state = session.pop('state', None)
-#     flow.fetch_token(authorization_response=request.url, state=state)
-#     credentials = flow.credentials
+@app.route("/sign-in", methods=['POST'])
+def signin():
+    username = request.json["username"]
+    password = request.json["password"]
+    email = request.json["email"]
+
+    user_exists = User.query.filter_by(username=username).first() is not None
+
+    if user_exists:
+        return jsonify({
+            "error": "User Already exists"
+        }), 409
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    new_user = User(username=username,password=hashed_password, email=email)
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({
+        "id": new_user.id,
+        "username": new_user.username
+    })
+
+@app.route("/login", methods=['POST'])
+def login():
+    username = request.json["username"]
+    password = request.json["password"]
+
+    user = User.query.filter_by(username=username).first()
+
+    if user is None:
+        return jsonify({
+            "error": "User not found in db"
+        }), 401
+    if not bcrypt.check_password_hash(user.password.encode('utf-8'), password):
+        return jsonify({
+            "error": "Passwords do not match"
+        }), 401
     
-   
-#     id_info = id_token.verify_oauth2_token(
-#         credentials.id_token, requests.Request(), GOOGLE_CLIENT_ID)
+    session["user_id"] = user.id
+
+    return jsonify({
+        "id": user.id,
+        "username": user.username
+    })
+
+@app.route("/details", methods=['GET'])
+def view_details():
+    user_id = session.get("user_id")
+    if not user_id:
+        return jsonify({
+            "error": "Unathorized"
+        }), 401
     
-#     # Print user details
-#     print("User ID:", id_info['sub'])
-#     print("Email:", id_info['email'])
-#     print("Name:", id_info['name'])
-#     print("Profile Picture URL:", id_info['picture'])
+    user = User.query.filter_by(id=user_id).first()
+    if user is None:
+        return jsonify({
+            "error": "User not found"
+        }), 404
+
+    return jsonify({
+        "id": user.id,
+        "username": user.username
+    })
+
+# """Needs"""
+# # Africas Talking credentials
+# username = 'sandbox'
+# api_key = '710e7cbe8961305d6c90cfbf2bdf1abbad728e3405eb75da0c967c9225d73938'
+# africastalking.initialize(username, api_key)
+# sms = africastalking.SMS
+
+# # Function to send sms
+# def send_sms(to, message):
+#     try:
+#         response = sms.send(message, [to])
+#         print(response)
+#     except Exception as e:
+#         print(f'An error occoured while sending message {e}')
+
+# """Needs routes"""
+# @app.route('/add_need', methods=['POST'])
+# def add_need():
+#     data = request.get_json()
+#     need = data['need']
+#     amount = data['amount']
+#     duedate = datetime.strptime(data['duedate'], '%H:%M:%S %d-%m-%Y')
+#     storable_date = duedate.strftime('%Y-%m-%d %H:%M:%S')
+
+#     user_id = session.get("user_id")
+#     if not user_id:
+#         return jsonify({
+#             "error": "Unathorized"
+#         }), 401
     
-#     return "Successfully authenticated!"
+#     user = User.query.filter_by(id=user_id).first()
+#     if user is None:
+#         return jsonify({
+#             "error": "User not found"
+#         }), 404
+#     user_id = user.id
+
+#     ned = Need(need=need, amount=amount, duedate=storable_date,
+#                user_id=user_id)
+    
+
+#     try:
+#         parsed_number = phonenumbers.parse(user.phone_no, "KE")
+#         formatted_no = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
+#     except NumberParseException as e:
+#         return jsonify({
+#             "error": f"Invalid phone number: {e}"
+#         }), 400
+
+#     def send_three_minutes_before():
+#         send_sms(formatted_no, f'The payment for {need} is due soon')
+
+#     def send_on_due_date():
+#         send_sms(formatted_no, f'The {need} should be settled today')
+
+#     def send_two_minutes_after():
+#        send_sms(formatted_no, f'The payment for {need} has been delayed by two minutes')
+
+#     # Background scheduler
+#     scheduler = BackgroundScheduler()
+#     scheduler.add_job(send_three_minutes_before, 'date', run_date=duedate - timedelta(minutes=3))
+#     scheduler.add_job(send_on_due_date, 'date', run_date=duedate)
+#     scheduler.add_job(send_two_minutes_after, 'date', run_date=duedate + timedelta(minutes=2))
+#     scheduler.start()
+
+#     db.session.add(ned)
+#     db.session.commit()
+
+#     return jsonify({'message': 'New need created successfully'})
 
 @app.route("/")
 def home():
