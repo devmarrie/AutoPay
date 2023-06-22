@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import httpClient from './httpClient';
 
 function Login() {
   // const responseMessage = (response) => {
@@ -45,7 +45,7 @@ function Login() {
     };
     try {
       console.log(data)
-      const response = await axios.post('http://127.0.0.1:5000/sign-in', data);
+      const response = await httpClient.post('http://127.0.0.1:5000/sign-in', data);
       console.log(response.data)
       alert("User registered successfully!");
       e.target.reset();
@@ -61,11 +61,11 @@ function Login() {
         <Picture><img src={process.env.PUBLIC_URL + '/images/user_dashboard.png'} alt='logo' /></Picture>
         <Details>
           <Text> Sign In for Autopay</Text>
-          <OtherSide>
+          <OtherSide method='post' onSubmit={handleOnsubmit}>
           <input type='text' placeholder='username' name='username' />
           <input type='text' placeholder='phonenumber(254712345678)' name='phone_no' />
           <input type='text' placeholder='password' name='password' /> 
-           <Send onClick={handleOnsubmit}>
+           <Send type='submit'>
             Sign in 
           </Send>
           </OtherSide>
@@ -112,7 +112,7 @@ align-items: center;
 justify-content: center;
 
 `
-const OtherSide = styled.div`
+const OtherSide = styled.form`
 display: flex;
 flex-direction: column;
 align-items: center;
