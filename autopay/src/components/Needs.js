@@ -6,21 +6,49 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { needsPresent } from '../data/NeedsData'
 import axios from 'axios';
+import { useState, useEffect } from "react"
+
 
 function Needs() {
+  const [needs, setNeeds] =  useState([])
+  const fetchData = async () => {
+    const response = await axios.get('http://127.0.0.1:5000/get_needs');
+    const resdata = response.data
+    setNeeds(resdata)
+    console.log("res:", response.data)
+        // try {
+        //   const response = await axios.get('http://127.0.0.1/get_needs');
+        //   const resdata = response.resdata
+        //   console.log(resdata)
+        //   // const dataValues = resdata.map((item) => {
+        //   //   return {
+        //   //     need: item.need,
+        //   //     amount: item.amount,
+        //   //     phone_no: item.phone_no,
+        //   //     duedate: item.duedate
+        //   //   };
+        //   // });
+        //   setNeeds(resdata);
+        // } catch (error) {
+        //   console.log("Error fetching needs:", error)
+        // }
+      };
+
+
   const handleOnsubmit = async (e) => {
     e.preventDefault();
     // const sessionToken = localStorage.getItem('user_id');
     console.log(e.target)
     const need = e.target.need.value;
     const amount = e.target.amount.value;
+    const phone_no = e.target.phone_no.value;
     const duedate = e.target.duedate.value;
 
     const data = {
       "need": need,
       "amount": amount,
+      "phone_no": phone_no,
       "duedate": duedate
     };
 
@@ -28,17 +56,25 @@ function Needs() {
       const response = await axios.post('http://127.0.0.1:5000/add_need', data, {withCredentials: true});
       console.log(response.data);
       alert('Need created successfully');
+      fetchData();
       e.target.reset();
+      // the table
       } catch (error) {
        console.log(error);
       }
     };
+
+    useEffect(() => {
+      fetchData();
+    }, []);
+
   return (
     <ContainerNeeds>
       <NeedForm>
         <Form method='post' onSubmit={handleOnsubmit}>
           <input type='text' placeholder='need' name='need' />
           <input type='text' placeholder='amount' name='amount' />
+          <input type='text' placeholder='phoneNumber' name='phone_no' />
           <input type='text' placeholder='duedate(18:42:00 12-06-2023)' name='duedate' />
           <Send type='submit'>Send</Send>
         </Form>
@@ -56,21 +92,21 @@ function Needs() {
             <TableCell style={{fontWeight: 'bold'}}>Need</TableCell>
             <TableCell align="right" style={{fontWeight: 'bold'}}>Amount</TableCell>
             <TableCell align="right" style={{fontWeight: 'bold'}}>Due Date</TableCell>
-            <TableCell align="right" style={{fontWeight: 'bold'}}>Remove</TableCell>
+            <TableCell align="right" style={{fontWeight: 'bold'}}>PhoneNumber</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-         {needsPresent.map((item) => (
+         {needs.map((val) => (
           <TableRow
-           key={item.need}
+           key={val.need}
            sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
           >
           <TableCell component="th" scope="row">
-                {item.need}
+                {val.need}
           </TableCell>
-          <TableCell align="right">{item.amount}</TableCell>
-          <TableCell align="right">{item.duedate}</TableCell>
-          <TableCell align="right">{item.remove}</TableCell>
+          <TableCell align="right">{val.amount}</TableCell>
+          <TableCell align="right">{val.duedate}</TableCell>
+          <TableCell align="right">{val.phone_no}</TableCell>
           </TableRow>
          ))}
          </TableBody>
@@ -167,15 +203,15 @@ padding-right: 28px;
 `
 
 
-const Toa = styled.div`
-background: #ea1535;
-width:68px;
-height:42px;
-cursor: pointer;
-display: flex;
-align-items: center;
-justify-content: center;
-padding-left: 5px;
-padding-right: 5px;
-border-radius: 6px;
-`
+// const Toa = styled.div`
+// background: #ea1535;
+// width:68px;
+// height:42px;
+// cursor: pointer;
+// display: flex;
+// align-items: center;
+// justify-content: center;
+// padding-left: 5px;
+// padding-right: 5px;
+// border-radius: 6px;
+// `
