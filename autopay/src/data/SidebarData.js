@@ -4,25 +4,31 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import PaymentsIcon from '@mui/icons-material/Payments';
 
+
 export const sidebarItems = [
     {
         icon: <PaymentsIcon />,
-        text: "Pay"
+        text: "Pay",
+        route: "/pay"
     },
     {
         icon: <AddCircleOutlineIcon />,
-        text: "Needs"
+        text: "Needs",
+        route: "/needs"
     },
     {
         icon: <DashboardCustomizeIcon />,
-        text: "Dashboard"
+        text: "Dashboard",
+        route: "/dashboard"
     },
     {
         icon: <ReceiptLongIcon />,
-        text: "Payment History"
+        text: "Payment History",
+        route: "/history"
     },
     {
         icon: <SettingsOutlinedIcon />,
-        text: "Settings"
+        text: "Settings",
+        route: "/settings"
     }
 ]
