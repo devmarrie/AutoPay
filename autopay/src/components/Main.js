@@ -1,21 +1,76 @@
-import React from 'react'
+import React, {useState, useEffect} from 'react'
 import styled from 'styled-components'
-import { dashboardNeed } from '../data/DashNeeds'
-import HomeIcon from '@mui/icons-material/Home';
+import PaymentsIcon from '@mui/icons-material/Payments';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import HomeIcon from '@mui/icons-material/Home';
+import WaterDropOutlinedIcon from '@mui/icons-material/WaterDropOutlined';
+import EmojiObjectsOutlinedIcon from '@mui/icons-material/EmojiObjectsOutlined';
+import WifiOutlinedIcon from '@mui/icons-material/WifiOutlined';
+import SchoolIcon from '@mui/icons-material/School';
+import SubscriptionsIcon from '@mui/icons-material/Subscriptions';
+import SportsGymnasticsIcon from '@mui/icons-material/SportsGymnastics';
+import AddToPhotosIcon from '@mui/icons-material/AddToPhotos';
+import FoodBankIcon from '@mui/icons-material/FoodBank';
 
+
+const iconMap = {
+  rent: <HomeIcon />,
+  water: <WaterDropOutlinedIcon />,
+  lights: <EmojiObjectsOutlinedIcon />,
+  wifi: <WifiOutlinedIcon />,
+  fees: <SchoolIcon />,
+  subscriptions: <SubscriptionsIcon />,
+  transport: <DirectionsCarIcon />,
+  gym: <SportsGymnasticsIcon />,
+  food: <FoodBankIcon />,
+  any: <AddToPhotosIcon />
+};
 
 function Main() {
+  const [payments, setPayments] =  useState([])
+  const navigate = useNavigate();
+  const seeAll = () => {
+    navigate("/history")
+  }
+  const fetchPayments = async () => {
+    const response = await axios.get('http://127.0.0.1:5000/get_payments');
+    const resdata = response.data
+    setPayments(resdata)
+    console.log(resdata)
+  };
+
+  useEffect(() => {
+    fetchPayments();
+  },[])
+  const limitPaymnets = payments.slice(0,3);
+  console.log(limitPaymnets)
+  //Needs
+  const [needs, setNeeds] =  useState([])
+  const fetchData = async () => {
+    const response = await axios.get('http://127.0.0.1:5000/get_needs');
+    const resdata = response.data
+    setNeeds(resdata)
+    console.log("res:", response.data)
+  };
+
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+  const limitNeedsBanner = needs.slice(0,6);
+  const limitNeedsDue = needs.slice(0,3);
   return (
     <Container>
       <Banner>
         <Automated>Automated Payments</Automated>
         <NeedsAuto>
           {
-            dashboardNeed.map(item => (
-              <Spesific>
-                {item.icon}
-                {item.text}
+            limitNeedsBanner.map((item, index) => (
+              <Spesific key={index}>
+                {iconMap[item.need] || iconMap.any}
+                {item.need}
               </Spesific>
             ))
           }
@@ -25,24 +80,35 @@ function Main() {
       <Table>
         <TitlePay>Cleared Payments</TitlePay>
         <Title>
-          <One>Bill</One>
-          <Two>Status</Two>
-          <Three>Date</Three>
+          <One>Icon</One>
+          <Two>Need</Two>
+          <Three>Amount</Three>
+          <Three>Code</Three>
         </Title>
-        <TableContent>
-          <Icon><HomeIcon /></Icon>
-          <Text>paid</Text>
-          <Date>24/07/2023</Date>
-        </TableContent>
+          {
+            limitPaymnets.map((pay) => (
+              <TableContent>
+              <Icon><PaymentsIcon /></Icon>
+              <Text>{pay.need}</Text>
+              <Date>{pay.amount}</Date>
+              <Text>{pay.code}</Text>
+              </TableContent>
+            ))
+          }
+          <More onClick={seeAll}>See All</More>
       </Table>
       <Due>
         <DueTitle>Due Payments</DueTitle>
-        <ThePay>
-          <ItemVal>
-            <DirectionsCarIcon />
-          </ItemVal>
-          <DueText> Transport</DueText>
-        </ThePay>
+        {
+          limitNeedsDue.map((due) => (
+            <ThePay>
+             <ItemVal>
+             {iconMap[due.need] || iconMap.any}
+             </ItemVal>
+             <DueText>{due.need}</DueText>
+           </ThePay>
+          ))
+        }
       </Due>
       </PaymentsSide>
     </Container>
@@ -107,9 +173,11 @@ grid-template-columns: 75% auto;
  height: 38px;
  margin: 15px;
  display: flex;
- column-gap: 138px;
- justify-content: center; 
+ justify-content: space-between; 
  align-items: center;
+ padding-left: 38px;
+ padding-right: 10px;
+
  `
 
  const One = styled.div``
@@ -160,4 +228,12 @@ justify-content: center;
 
 const DueText = styled.div`
 
+`
+const More = styled.div`
+cursor: pointer;
+height: 38px;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: 500;
 `
