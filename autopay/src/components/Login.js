@@ -49,7 +49,7 @@ function Login() {
       console.log(response.data)
       alert("User registered successfully!");
       e.target.reset();
-      navigate('/user');
+      navigate('/');
     } catch (error) {
       console.log(error);
     }
