@@ -4,6 +4,7 @@ from models.user import User
 from apscheduler.schedulers.background import BackgroundScheduler
 from phonenumbers.phonenumberutil import NumberParseException
 from models.need import Need
+from models.pay import Pay
 from datetime import datetime, timedelta
 from flask_user import current_user
 import africastalking
@@ -52,7 +53,7 @@ def add_need():
     ned = Need(need=need, amount=amount, duedate=storable_date,
                phone_no=phone_no)
     
-
+    paid = Pay.query.filter_by(need=need).first()
     try:
         parsed_number = phonenumbers.parse(phone_no, "KE")
         formatted_no = phonenumbers.format_number(parsed_number, phonenumbers.PhoneNumberFormat.E164)
@@ -62,19 +63,25 @@ def add_need():
         }), 400
 
     def send_three_minutes_before():
-        send_sms(formatted_no, f'The payment for {need} is due soon')
+        send_sms(formatted_no, f'Dear customer, the payment for {need} is due soon')
 
     def send_on_due_date():
-        send_sms(formatted_no, f'The {need} should be settled today')
+        send_sms(formatted_no, f'Dear customer, the payment for {need} should be settled today')
 
     def send_two_minutes_after():
-       send_sms(formatted_no, f'The payment for {need} has been delayed by two minutes')
+       send_sms(formatted_no, f'Dear customer, the payment for {need} has been delayed by two minutes')
+
+    def success_message():
+        send_sms(formatted_no, f'Congratulations for settling the payment of {need} on time')
 
     # Background scheduler
     scheduler = BackgroundScheduler()
     scheduler.add_job(send_three_minutes_before, 'date', run_date=duedate - timedelta(minutes=3))
     scheduler.add_job(send_on_due_date, 'date', run_date=duedate)
-    scheduler.add_job(send_two_minutes_after, 'date', run_date=duedate + timedelta(minutes=2))
+    if paid is None:
+       scheduler.add_job(send_two_minutes_after, 'date', run_date=duedate + timedelta(minutes=2))
+    else:
+        scheduler.add_job(success_message, 'date', run_date=duedate + timedelta(minutes=1))
     scheduler.start()
 
     db.session.add(ned)
