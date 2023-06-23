@@ -1,12 +1,13 @@
 import React from 'react'
 import styled from 'styled-components'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 
 
 
-function Login() {
+function LogInUser() {
   const navigate = useNavigate();
+
   const handleOnsubmit = async (e) =>{
     e.preventDefault();
     const username = e.target.username.value;
@@ -26,7 +27,7 @@ function Login() {
       console.log(error);
     }
   }
-
+  
   return (
     <Kishikio>
       <Container>
@@ -39,15 +40,17 @@ function Login() {
           <Send type='submit'>
             Login
           </Send>
+          <NoAccount>
+            <Link to="/user">Dont have an account? Sign In</Link>
+          </NoAccount>
           </OtherSide>
         </Details>
       </Container>
     </Kishikio>
-    
   )
 }
 
-export default Login
+export default LogInUser
 
 const Kishikio = styled.div`
 display: flex;
@@ -114,3 +117,6 @@ const Send = styled.button`
   border-radius: 25px;
   cursor: pointer;
   `
+const NoAccount = styled.div`
+margin-top: 38px;
+`
