@@ -41,11 +41,11 @@ const Container = styled.div`
 `;
 
 const Home = () => {
-  return <Login />;
+  return <LogInUser />;
 };
 
 const After = () => {
-  return <LogInUser />;
+  return <Login />;
 };
 
 const RoomWithSidebar = () => {
