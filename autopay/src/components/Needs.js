@@ -17,23 +17,7 @@ function Needs() {
     const resdata = response.data
     setNeeds(resdata)
     console.log("res:", response.data)
-        // try {
-        //   const response = await axios.get('http://127.0.0.1/get_needs');
-        //   const resdata = response.resdata
-        //   console.log(resdata)
-        //   // const dataValues = resdata.map((item) => {
-        //   //   return {
-        //   //     need: item.need,
-        //   //     amount: item.amount,
-        //   //     phone_no: item.phone_no,
-        //   //     duedate: item.duedate
-        //   //   };
-        //   // });
-        //   setNeeds(resdata);
-        // } catch (error) {
-        //   console.log("Error fetching needs:", error)
-        // }
-      };
+  };
 
 
   const handleOnsubmit = async (e) => {
@@ -147,6 +131,8 @@ grid-template-rows: 300px auto;
 `
 const NeedForm = styled.div`
 display: flex;
+margin-top: 28px;
+margin-bottom: 8px;
 `
 const Form = styled.form`
 width: 50%;
@@ -182,24 +168,21 @@ img {
 `
 
 const Send = styled.button`
-  height: 38px;
-  width: 360px;
+  height: 42px;
+  width: 370px;
   background: #08711E;
   color: #fcfeff;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 3px;
+  border-radius: 6px;
   cursor: pointer;
   `
 
 
 const NeedTable = styled.div`
-display: flex;
-justify-content: center;
-align-items: center;
-padding-left: 28px;
-padding-right: 28px;
+margin: 16px;
+
 `
 
 
