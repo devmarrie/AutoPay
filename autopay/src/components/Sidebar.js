@@ -15,7 +15,7 @@ function Sidebar() {
   }
 
   const handleLogout = () => {
-    navigate('/user')
+    navigate('/')
   }
   return (
     <Container>
