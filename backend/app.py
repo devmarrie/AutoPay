@@ -25,13 +25,13 @@ CORS(app, origins=['http://localhost:3000'],
     )
 
 load_dotenv()
-# Db configuration
+"""Db configuration"""
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
 app.config['USER_EMAIL_SENDER_EMAIL'] = os.getenv('EMAIL')
 app.config['SQLACHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLACHEMY_ECHO'] = True
 app.config['SECRET_KEY'] = secrets.token_hex(16)
-app.config['SESSION_TYPE'] = 'filesystem'
+#app.config['SESSION_TYPE'] = 'filesystem'
 
 """Session config"""
 app.config['SESSION_TYPE'] = 'redis'
@@ -112,6 +112,7 @@ def login():
             "error": "Passwords do not match"
         }), 401
     
+    # save the user session
     session["user_id"] = user.id
 
     return jsonify({
