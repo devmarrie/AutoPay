@@ -9,6 +9,7 @@ import Sidebar from './components/Sidebar';
 import styled from 'styled-components';
 import Pay from './components/Pay';
 import LogInUser from './components/LogInUser'
+import NotFound from './components/NotFound';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path='/user' element={<After />} />
+            <Route path='/*' element={<NotF/>} />
             <Route element={<RoomWithSidebar />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/history" element={<History />} />
@@ -47,6 +49,10 @@ const Home = () => {
 const After = () => {
   return <Login />;
 };
+
+const NotF = () => {
+  return <NotFound />
+}
 
 const RoomWithSidebar = () => {
   return (
