@@ -5,9 +5,9 @@ import { useNavigate, Link } from 'react-router-dom'
 
 
 
+
 function LogInUser() {
   const navigate = useNavigate();
-
   const handleOnsubmit = async (e) =>{
     e.preventDefault();
     const username = e.target.username.value;
@@ -25,6 +25,7 @@ function LogInUser() {
       navigate('/needs');
     } catch (error) {
       console.log(error);
+      alert("Invalid Login Credentials")
     }
   }
   
