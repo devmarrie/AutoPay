@@ -13,7 +13,7 @@ import { useState, useEffect } from "react"
 function Needs() {
   const [needs, setNeeds] =  useState([])
   const fetchData = async () => {
-    const response = await axios.get('http://127.0.0.1:5000/get_needs');
+    const response = await axios.get('http://127.0.0.1:5000/get_needs', {withCredentials: true});
     const resdata = response.data
     setNeeds(resdata)
     console.log("res:", response.data)
